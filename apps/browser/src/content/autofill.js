@@ -351,9 +351,8 @@
 
               el.dispatchEvent(doEventOnElement(el, 'keydown'));
               el.dispatchEvent(doEventOnElement(el, 'keypress'));
-              el.dispatchEvent(doEventOnElement(el, 'keyup'));
-
               el.value !== originalValue && (el.value = originalValue);
+              el.dispatchEvent(doEventOnElement(el, 'keyup'));
 
               el.click && el.click();
               f.postFakeTestVisible = isElementVisible(el);
@@ -366,14 +365,13 @@
                   event2 = el.ownerDocument.createEvent('HTMLEvents');
               el.dispatchEvent(doEventOnElement(el, 'keydown'));
               el.dispatchEvent(doEventOnElement(el, 'keypress'));
-              el.dispatchEvent(doEventOnElement(el, 'keyup'));
+              el.value !== elValue && (el.value = elValue);
               event2.initEvent('input', true, true);
               el.dispatchEvent(event2);
+              el.dispatchEvent(doEventOnElement(el, 'keyup'));
               event1.initEvent('change', true, true);
               el.dispatchEvent(event1);
-
               el.blur();
-              el.value !== elValue && (el.value = elValue);
           });
 
           // build out the page details object. this is the final result
@@ -889,8 +887,8 @@
           doFocusElement(el, false);
           el.dispatchEvent(normalizeEvent(el, 'keydown'));
           el.dispatchEvent(normalizeEvent(el, 'keypress'));
-          el.dispatchEvent(normalizeEvent(el, 'keyup'));
           el.value !== valueToSet && (el.value = valueToSet);
+          el.dispatchEvent(normalizeEvent(el, 'keyup'));
       }
 
       // set value of the given element by using events
@@ -901,13 +899,13 @@
 
           el.dispatchEvent(normalizeEvent(el, 'keydown'));
           el.dispatchEvent(normalizeEvent(el, 'keypress'));
-          el.dispatchEvent(normalizeEvent(el, 'keyup'));
+          el.value !== valueToSet && (el.value = valueToSet);
           ev2.initEvent('input', true, true);
           el.dispatchEvent(ev2);
+          el.dispatchEvent(normalizeEvent(el, 'keyup'));
           ev1.initEvent('change', true, true);
           el.dispatchEvent(ev1);
           el.blur();
-          el.value !== valueToSet && (el.value = valueToSet);
       }
 
       // click on an element
