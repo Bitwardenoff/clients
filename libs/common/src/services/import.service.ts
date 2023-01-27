@@ -208,8 +208,6 @@ export class ImportService implements ImportServiceAbstraction {
         return new OnePasswordMacCsvImporter();
       case "keepercsv":
         return new KeeperCsvImporter();
-      // case "keeperjson":
-      //   return new KeeperJsonImporter();
       case "passworddragonxml":
         return new PasswordDragonXmlImporter();
       case "enpasscsv":
@@ -287,7 +285,16 @@ export class ImportService implements ImportServiceAbstraction {
     }
   }
 
+  private deduplicateCiphers(importResult: ImportResult): ImportResult {
+    const jsons = importResult.ciphers.map((x) => JSON.stringify(x));
+    const deduplicatedJsons = new Set<string>(jsons);
+    const deduplicatedCiphers = [...deduplicatedJsons].map((x) => JSON.parse(x));
+    return { ...importResult, ciphers: deduplicatedCiphers };
+  }
+
   private async postImport(importResult: ImportResult, organizationId: string = null) {
+    importResult = this.deduplicateCiphers(importResult);
+
     if (organizationId == null) {
       const request = new ImportCiphersRequest();
       for (let i = 0; i < importResult.ciphers.length; i++) {
