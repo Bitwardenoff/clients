@@ -1,3 +1,4 @@
+import { NgIf, NgTemplateOutlet, AsyncPipe } from "@angular/common";
 import {
   AfterContentInit,
   Component,
@@ -9,12 +10,26 @@ import {
   QueryList,
 } from "@angular/core";
 
+import { JslibModule } from "../../../angular/src/jslib.module";
+import { BitIconButtonComponent } from "../icon-button/icon-button.component";
+import { I18nPipe } from "../shared/i18n.pipe";
+
 import { NavBaseComponent } from "./nav-base.component";
 import { NavItemComponent } from "./nav-item.component";
 
 @Component({
   selector: "bit-nav-group",
   templateUrl: "./nav-group.component.html",
+  standalone: true,
+  imports: [
+    NavItemComponent,
+    BitIconButtonComponent,
+    NgIf,
+    NgTemplateOutlet,
+    AsyncPipe,
+    I18nPipe,
+    JslibModule,
+  ],
 })
 export class NavGroupComponent extends NavBaseComponent implements AfterContentInit {
   @ContentChildren(forwardRef(() => NavGroupComponent), {

@@ -4,8 +4,7 @@ import { NgModule } from "@angular/core";
 import { TypographyDirective } from "./typography.directive";
 
 @NgModule({
-  imports: [CommonModule],
+  imports: [CommonModule, TypographyDirective],
   exports: [TypographyDirective],
-  declarations: [TypographyDirective],
 })
 export class TypographyModule {}

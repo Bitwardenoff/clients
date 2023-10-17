@@ -7,8 +7,8 @@ import { SortableComponent } from "./sortable.component";
 import { TableBodyDirective, TableComponent } from "./table.component";
 
 @NgModule({
-  imports: [CommonModule],
-  declarations: [
+  imports: [
+    CommonModule,
     TableComponent,
     CellDirective,
     RowDirective,

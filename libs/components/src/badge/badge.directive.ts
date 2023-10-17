@@ -22,6 +22,7 @@ const hoverStyles: Record<BadgeTypes, string[]> = {
 
 @Directive({
   selector: "span[bitBadge], a[bitBadge], button[bitBadge]",
+  standalone: true,
 })
 export class BadgeDirective {
   @HostBinding("class") get classList() {

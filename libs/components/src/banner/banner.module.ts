@@ -7,8 +7,7 @@ import { SharedModule } from "../shared/shared.module";
 import { BannerComponent } from "./banner.component";
 
 @NgModule({
-  imports: [CommonModule, SharedModule, IconButtonModule],
+  imports: [CommonModule, SharedModule, IconButtonModule, BannerComponent],
   exports: [BannerComponent],
-  declarations: [BannerComponent],
 })
 export class BannerModule {}

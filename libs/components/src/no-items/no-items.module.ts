@@ -6,8 +6,7 @@ import { IconModule } from "../icon";
 import { NoItemsComponent } from "./no-items.component";
 
 @NgModule({
-  imports: [CommonModule, IconModule],
+  imports: [CommonModule, IconModule, NoItemsComponent],
   exports: [NoItemsComponent],
-  declarations: [NoItemsComponent],
 })
 export class NoItemsModule {}

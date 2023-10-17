@@ -1,4 +1,5 @@
 import { coerceBooleanProperty } from "@angular/cdk/coercion";
+import { NgClass } from "@angular/common";
 import { Component, HostBinding, Input, OnInit } from "@angular/core";
 
 import type { SortFn } from "./table-data-source";
@@ -12,6 +13,8 @@ import { TableComponent } from "./table.component";
       <i class="bwi tw-ml-2" [ngClass]="icon"></i>
     </button>
   `,
+  standalone: true,
+  imports: [NgClass],
 })
 export class SortableComponent implements OnInit {
   /**

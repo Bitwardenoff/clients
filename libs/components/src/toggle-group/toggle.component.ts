@@ -1,3 +1,4 @@
+import { NgClass } from "@angular/common";
 import { Component, HostBinding, Input } from "@angular/core";
 
 import { ToggleGroupComponent } from "./toggle-group.component";
@@ -8,6 +9,8 @@ let nextId = 0;
   selector: "bit-toggle",
   templateUrl: "./toggle.component.html",
   preserveWhitespaces: false,
+  standalone: true,
+  imports: [NgClass],
 })
 export class ToggleComponent<TValue> {
   id = nextId++;

@@ -1,12 +1,26 @@
+import { NgIf, NgClass, NgStyle, NgTemplateOutlet, AsyncPipe } from "@angular/common";
 import { Component, HostListener, Input } from "@angular/core";
-import { IsActiveMatchOptions } from "@angular/router";
+import { IsActiveMatchOptions, RouterLinkActive, RouterLink } from "@angular/router";
 import { BehaviorSubject, map } from "rxjs";
+
+import { BitIconButtonComponent } from "../icon-button/icon-button.component";
 
 import { NavBaseComponent } from "./nav-base.component";
 
 @Component({
   selector: "bit-nav-item",
   templateUrl: "./nav-item.component.html",
+  standalone: true,
+  imports: [
+    NgIf,
+    NgClass,
+    NgStyle,
+    BitIconButtonComponent,
+    RouterLinkActive,
+    RouterLink,
+    NgTemplateOutlet,
+    AsyncPipe,
+  ],
 })
 export class NavItemComponent extends NavBaseComponent {
   /**

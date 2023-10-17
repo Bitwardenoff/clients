@@ -7,8 +7,7 @@ import { BitSubmitDirective } from "./bit-submit.directive";
 import { BitFormButtonDirective } from "./form-button.directive";
 
 @NgModule({
-  imports: [SharedModule],
-  declarations: [BitActionDirective, BitFormButtonDirective, BitSubmitDirective],
+  imports: [SharedModule, BitActionDirective, BitFormButtonDirective, BitSubmitDirective],
   exports: [BitActionDirective, BitFormButtonDirective, BitSubmitDirective],
 })
 export class AsyncActionsModule {}

@@ -7,8 +7,7 @@ import { BitHintComponent } from "./hint.component";
 import { BitLabel } from "./label.directive";
 
 @NgModule({
-  imports: [SharedModule],
-  declarations: [FormControlComponent, BitLabel, BitHintComponent],
+  imports: [SharedModule, FormControlComponent, BitLabel, BitHintComponent],
   exports: [FormControlComponent, BitLabel, BitHintComponent],
 })
 export class FormControlModule {}

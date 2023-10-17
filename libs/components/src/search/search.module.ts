@@ -7,8 +7,7 @@ import { SharedModule } from "../shared";
 import { SearchComponent } from "./search.component";
 
 @NgModule({
-  imports: [SharedModule, InputModule, FormsModule],
-  declarations: [SearchComponent],
+  imports: [SharedModule, InputModule, FormsModule, SearchComponent],
   exports: [SearchComponent],
 })
 export class SearchModule {}

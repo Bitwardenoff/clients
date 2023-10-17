@@ -4,8 +4,7 @@ import { NgModule } from "@angular/core";
 import { ColorPasswordComponent } from "./color-password.component";
 
 @NgModule({
-  imports: [CommonModule],
+  imports: [CommonModule, ColorPasswordComponent],
   exports: [ColorPasswordComponent],
-  declarations: [ColorPasswordComponent],
 })
 export class ColorPasswordModule {}

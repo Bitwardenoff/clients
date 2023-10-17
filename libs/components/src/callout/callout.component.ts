@@ -1,3 +1,4 @@
+import { NgClass, NgIf } from "@angular/common";
 import { Component, Input, OnInit } from "@angular/core";
 
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
@@ -22,6 +23,8 @@ let nextId = 0;
 @Component({
   selector: "bit-callout",
   templateUrl: "callout.component.html",
+  standalone: true,
+  imports: [NgClass, NgIf],
 })
 export class CalloutComponent implements OnInit {
   @Input() type: CalloutTypes = "info";

@@ -6,6 +6,7 @@ import { PrefixButtonClasses, PrefixClasses, PrefixStaticContentClasses } from "
 
 @Directive({
   selector: "[bitSuffix]",
+  standalone: true,
 })
 export class BitSuffixDirective {
   constructor(@Optional() private buttonComponent: ButtonLikeAbstraction) {}

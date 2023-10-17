@@ -6,8 +6,7 @@ import { SharedModule } from "../shared";
 import { BadgeListComponent } from "./badge-list.component";
 
 @NgModule({
-  imports: [SharedModule, BadgeModule],
+  imports: [SharedModule, BadgeModule, BadgeListComponent],
   exports: [BadgeListComponent],
-  declarations: [BadgeListComponent],
 })
 export class BadgeListModule {}

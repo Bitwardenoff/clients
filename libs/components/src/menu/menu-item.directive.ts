@@ -3,6 +3,7 @@ import { Directive, ElementRef, HostBinding } from "@angular/core";
 
 @Directive({
   selector: "[bitMenuItem]",
+  standalone: true,
 })
 export class MenuItemDirective implements FocusableOption {
   @HostBinding("class") classList = [

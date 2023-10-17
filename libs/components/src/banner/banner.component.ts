@@ -1,4 +1,9 @@
+import { NgClass, NgIf } from "@angular/common";
 import { Component, Input, OnInit, Output, EventEmitter } from "@angular/core";
+
+import { JslibModule } from "../../../angular/src/jslib.module";
+import { BitIconButtonComponent } from "../icon-button/icon-button.component";
+import { I18nPipe } from "../shared/i18n.pipe";
 
 type BannerTypes = "premium" | "info" | "warning" | "danger";
 
@@ -12,6 +17,8 @@ const defaultIcon: Record<BannerTypes, string> = {
 @Component({
   selector: "bit-banner",
   templateUrl: "./banner.component.html",
+  standalone: true,
+  imports: [NgClass, NgIf, BitIconButtonComponent, I18nPipe, JslibModule],
 })
 export class BannerComponent implements OnInit {
   @Input("bannerType") bannerType: BannerTypes = "info";

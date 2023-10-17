@@ -1,5 +1,14 @@
 import { Component, Input } from "@angular/core";
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from "@angular/forms";
+import {
+  ControlValueAccessor,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+  FormsModule,
+} from "@angular/forms";
+
+import { JslibModule } from "../../../angular/src/jslib.module";
+import { BitInputDirective } from "../input/input.directive";
+import { I18nPipe } from "../shared/i18n.pipe";
 
 let nextId = 0;
 
@@ -13,6 +22,8 @@ let nextId = 0;
       useExisting: SearchComponent,
     },
   ],
+  standalone: true,
+  imports: [BitInputDirective, ReactiveFormsModule, FormsModule, I18nPipe, JslibModule],
 })
 export class SearchComponent implements ControlValueAccessor {
   private notifyOnChange: (v: string) => void;

@@ -6,6 +6,7 @@ import { Icon, isIcon } from "./icon";
 @Component({
   selector: "bit-icon",
   template: ``,
+  standalone: true,
 })
 export class BitIconComponent {
   @Input() set icon(icon: Icon) {

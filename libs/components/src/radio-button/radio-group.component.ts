@@ -1,3 +1,4 @@
+import { NgIf, NgTemplateOutlet } from "@angular/common";
 import { Component, ContentChild, HostBinding, Input, Optional, Self } from "@angular/core";
 import { ControlValueAccessor, NgControl } from "@angular/forms";
 
@@ -8,6 +9,8 @@ let nextId = 0;
 @Component({
   selector: "bit-radio-group",
   templateUrl: "radio-group.component.html",
+  standalone: true,
+  imports: [NgIf, NgTemplateOutlet],
 })
 export class RadioGroupComponent implements ControlValueAccessor {
   selected: unknown;

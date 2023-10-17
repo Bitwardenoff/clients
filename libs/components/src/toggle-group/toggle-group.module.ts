@@ -7,8 +7,7 @@ import { ToggleGroupComponent } from "./toggle-group.component";
 import { ToggleComponent } from "./toggle.component";
 
 @NgModule({
-  imports: [CommonModule, BadgeModule],
+  imports: [CommonModule, BadgeModule, ToggleGroupComponent, ToggleComponent],
   exports: [ToggleGroupComponent, ToggleComponent],
-  declarations: [ToggleGroupComponent, ToggleComponent],
 })
 export class ToggleGroupModule {}

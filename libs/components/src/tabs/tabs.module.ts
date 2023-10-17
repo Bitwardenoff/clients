@@ -14,15 +14,10 @@ import { TabLinkComponent } from "./tab-nav-bar/tab-link.component";
 import { TabNavBarComponent } from "./tab-nav-bar/tab-nav-bar.component";
 
 @NgModule({
-  imports: [CommonModule, RouterModule, PortalModule],
-  exports: [
-    TabGroupComponent,
-    TabComponent,
-    TabLabelDirective,
-    TabNavBarComponent,
-    TabLinkComponent,
-  ],
-  declarations: [
+  imports: [
+    CommonModule,
+    RouterModule,
+    PortalModule,
     TabGroupComponent,
     TabComponent,
     TabLabelDirective,
@@ -32,6 +27,13 @@ import { TabNavBarComponent } from "./tab-nav-bar/tab-nav-bar.component";
     TabNavBarComponent,
     TabLinkComponent,
     TabBodyComponent,
+  ],
+  exports: [
+    TabGroupComponent,
+    TabComponent,
+    TabLabelDirective,
+    TabNavBarComponent,
+    TabLinkComponent,
   ],
 })
 export class TabsModule {}

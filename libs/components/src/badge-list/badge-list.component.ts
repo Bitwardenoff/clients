@@ -1,10 +1,16 @@
+import { NgFor, NgIf } from "@angular/common";
 import { Component, Input, OnChanges } from "@angular/core";
 
+import { JslibModule } from "../../../angular/src/jslib.module";
 import { BadgeTypes } from "../badge";
+import { BadgeDirective } from "../badge/badge.directive";
+import { I18nPipe } from "../shared/i18n.pipe";
 
 @Component({
   selector: "bit-badge-list",
   templateUrl: "badge-list.component.html",
+  standalone: true,
+  imports: [NgFor, BadgeDirective, NgIf, I18nPipe, JslibModule],
 })
 export class BadgeListComponent implements OnChanges {
   private _maxItems: number;

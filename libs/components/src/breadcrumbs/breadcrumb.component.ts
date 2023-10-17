@@ -1,9 +1,12 @@
+import { NgIf } from "@angular/common";
 import { Component, EventEmitter, Input, Output, TemplateRef, ViewChild } from "@angular/core";
 import { QueryParamsHandling } from "@angular/router";
 
 @Component({
   selector: "bit-breadcrumb",
   templateUrl: "./breadcrumb.component.html",
+  standalone: true,
+  imports: [NgIf],
 })
 export class BreadcrumbComponent {
   @Input()

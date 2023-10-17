@@ -4,8 +4,7 @@ import { NgModule } from "@angular/core";
 import { BitIconButtonComponent } from "./icon-button.component";
 
 @NgModule({
-  imports: [CommonModule],
-  declarations: [BitIconButtonComponent],
+  imports: [CommonModule, BitIconButtonComponent],
   exports: [BitIconButtonComponent],
 })
 export class IconButtonModule {}

@@ -9,8 +9,14 @@ import { SharedModule } from "../shared";
 import { MultiSelectComponent } from "./multi-select.component";
 
 @NgModule({
-  imports: [CommonModule, FormsModule, NgSelectModule, BadgeModule, SharedModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    NgSelectModule,
+    BadgeModule,
+    SharedModule,
+    MultiSelectComponent,
+  ],
   exports: [MultiSelectComponent],
-  declarations: [MultiSelectComponent],
 })
 export class MultiSelectModule {}

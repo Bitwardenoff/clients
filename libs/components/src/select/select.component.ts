@@ -1,3 +1,4 @@
+import { NgIf } from "@angular/common";
 import {
   Component,
   ContentChildren,
@@ -8,8 +9,14 @@ import {
   Self,
   ViewChild,
 } from "@angular/core";
-import { ControlValueAccessor, NgControl, Validators } from "@angular/forms";
-import { NgSelectComponent } from "@ng-select/ng-select";
+import {
+  ControlValueAccessor,
+  NgControl,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+} from "@angular/forms";
+import { NgSelectComponent, NgSelectModule } from "@ng-select/ng-select";
 
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 
@@ -24,6 +31,8 @@ let nextId = 0;
   selector: "bit-select",
   templateUrl: "select.component.html",
   providers: [{ provide: BitFormFieldControl, useExisting: SelectComponent }],
+  standalone: true,
+  imports: [NgSelectModule, ReactiveFormsModule, FormsModule, NgIf],
 })
 export class SelectComponent<T> implements BitFormFieldControl, ControlValueAccessor {
   @ViewChild(NgSelectComponent) select: NgSelectComponent;

@@ -31,6 +31,7 @@ export const PrefixStaticContentClasses = ["tw-block", "tw-px-3", "tw-py-1.5"];
 
 @Directive({
   selector: "[bitPrefix]",
+  standalone: true,
 })
 export class BitPrefixDirective implements OnInit {
   constructor(@Optional() private buttonComponent: ButtonLikeAbstraction) {}

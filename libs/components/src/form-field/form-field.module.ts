@@ -15,8 +15,11 @@ import { BitPrefixDirective } from "./prefix.directive";
 import { BitSuffixDirective } from "./suffix.directive";
 
 @NgModule({
-  imports: [SharedModule, FormControlModule, InputModule, MultiSelectModule],
-  declarations: [
+  imports: [
+    SharedModule,
+    FormControlModule,
+    InputModule,
+    MultiSelectModule,
     BitErrorComponent,
     BitErrorSummary,
     BitFormFieldComponent,

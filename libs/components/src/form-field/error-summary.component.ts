@@ -1,5 +1,9 @@
+import { NgIf } from "@angular/common";
 import { Component, Input } from "@angular/core";
 import { AbstractControl, UntypedFormGroup } from "@angular/forms";
+
+import { JslibModule } from "../../../angular/src/jslib.module";
+import { I18nPipe } from "../shared/i18n.pipe";
 
 @Component({
   selector: "bit-error-summary",
@@ -10,6 +14,8 @@ import { AbstractControl, UntypedFormGroup } from "@angular/forms";
     class: "tw-block tw-text-danger tw-mt-2",
     "aria-live": "assertive",
   },
+  standalone: true,
+  imports: [NgIf, I18nPipe, JslibModule],
 })
 export class BitErrorSummary {
   @Input()

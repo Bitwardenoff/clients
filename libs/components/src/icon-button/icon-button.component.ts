@@ -1,3 +1,4 @@
+import { NgClass } from "@angular/common";
 import { Component, HostBinding, Input } from "@angular/core";
 
 import { ButtonLikeAbstraction, ButtonType } from "../shared/button-like.abstraction";
@@ -124,6 +125,8 @@ const sizes: Record<IconButtonSize, string[]> = {
   selector: "button[bitIconButton]:not(button[bitButton])",
   templateUrl: "icon-button.component.html",
   providers: [{ provide: ButtonLikeAbstraction, useExisting: BitIconButtonComponent }],
+  standalone: true,
+  imports: [NgClass],
 })
 export class BitIconButtonComponent implements ButtonLikeAbstraction {
   @Input("bitIconButton") icon: string;

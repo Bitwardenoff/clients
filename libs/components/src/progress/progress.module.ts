@@ -4,8 +4,7 @@ import { NgModule } from "@angular/core";
 import { ProgressComponent } from "./progress.component";
 
 @NgModule({
-  imports: [CommonModule],
+  imports: [CommonModule, ProgressComponent],
   exports: [ProgressComponent],
-  declarations: [ProgressComponent],
 })
 export class ProgressModule {}

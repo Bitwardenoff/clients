@@ -1,9 +1,11 @@
-import { TemplatePortal } from "@angular/cdk/portal";
+import { TemplatePortal, PortalModule } from "@angular/cdk/portal";
 import { Component, HostBinding, Input } from "@angular/core";
 
 @Component({
   selector: "bit-tab-body",
   templateUrl: "tab-body.component.html",
+  standalone: true,
+  imports: [PortalModule],
 })
 export class TabBodyComponent {
   private _firstRender: boolean;

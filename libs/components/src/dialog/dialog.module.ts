@@ -22,8 +22,6 @@ import { IconDirective, SimpleDialogComponent } from "./simple-dialog/simple-dia
     CdkDialogModule,
     IconButtonModule,
     ReactiveFormsModule,
-  ],
-  declarations: [
     DialogCloseDirective,
     DialogTitleContainerDirective,
     DialogComponent,

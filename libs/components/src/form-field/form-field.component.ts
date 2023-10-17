@@ -1,4 +1,5 @@
 import { coerceBooleanProperty } from "@angular/cdk/coercion";
+import { NgIf, NgSwitch, NgSwitchCase } from "@angular/common";
 import {
   AfterContentChecked,
   Component,
@@ -10,7 +11,9 @@ import {
   ViewChild,
 } from "@angular/core";
 
+import { JslibModule } from "../../../angular/src/jslib.module";
 import { BitHintComponent } from "../form-control/hint.component";
+import { I18nPipe } from "../shared/i18n.pipe";
 
 import { BitErrorComponent } from "./error.component";
 import { BitFormFieldControl } from "./form-field-control";
@@ -20,6 +23,8 @@ import { BitSuffixDirective } from "./suffix.directive";
 @Component({
   selector: "bit-form-field",
   templateUrl: "./form-field.component.html",
+  standalone: true,
+  imports: [NgIf, NgSwitch, NgSwitchCase, BitErrorComponent, I18nPipe, JslibModule],
 })
 export class BitFormFieldComponent implements AfterContentChecked {
   @ContentChild(BitFormFieldControl) input: BitFormFieldControl;

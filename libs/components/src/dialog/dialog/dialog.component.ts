@@ -1,12 +1,28 @@
 import { coerceBooleanProperty } from "@angular/cdk/coercion";
+import { NgClass, NgIf } from "@angular/common";
 import { Component, HostBinding, Input } from "@angular/core";
 
+import { JslibModule } from "../../../../angular/src/jslib.module";
+import { BitIconButtonComponent } from "../../icon-button/icon-button.component";
+import { I18nPipe } from "../../shared/i18n.pipe";
 import { fadeIn } from "../animations";
+import { DialogCloseDirective } from "../directives/dialog-close.directive";
+import { DialogTitleContainerDirective } from "../directives/dialog-title-container.directive";
 
 @Component({
   selector: "bit-dialog",
   templateUrl: "./dialog.component.html",
   animations: [fadeIn],
+  standalone: true,
+  imports: [
+    NgClass,
+    DialogTitleContainerDirective,
+    BitIconButtonComponent,
+    DialogCloseDirective,
+    NgIf,
+    I18nPipe,
+    JslibModule,
+  ],
 })
 export class DialogComponent {
   /**

@@ -1,4 +1,5 @@
 import { hasModifierKey } from "@angular/cdk/keycodes";
+import { NgIf } from "@angular/common";
 import {
   Component,
   Input,
@@ -10,12 +11,21 @@ import {
   Optional,
   Self,
 } from "@angular/core";
-import { ControlValueAccessor, NgControl, Validators } from "@angular/forms";
-import { NgSelectComponent } from "@ng-select/ng-select";
+import {
+  ControlValueAccessor,
+  NgControl,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+} from "@angular/forms";
+import { NgSelectComponent, NgSelectModule } from "@ng-select/ng-select";
 
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 
+import { JslibModule } from "../../../angular/src/jslib.module";
+import { BadgeDirective } from "../badge/badge.directive";
 import { BitFormFieldControl } from "../form-field/form-field-control";
+import { I18nPipe } from "../shared/i18n.pipe";
 
 import { SelectItemView } from "./models/select-item-view";
 
@@ -26,6 +36,16 @@ let nextId = 0;
   selector: "bit-multi-select",
   templateUrl: "./multi-select.component.html",
   providers: [{ provide: BitFormFieldControl, useExisting: MultiSelectComponent }],
+  standalone: true,
+  imports: [
+    NgSelectModule,
+    ReactiveFormsModule,
+    FormsModule,
+    BadgeDirective,
+    NgIf,
+    I18nPipe,
+    JslibModule,
+  ],
 })
 /**
  * This component has been implemented to only support Multi-select list events

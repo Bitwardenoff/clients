@@ -1,13 +1,19 @@
 import { coerceBooleanProperty } from "@angular/cdk/coercion";
+import { NgIf } from "@angular/common";
 import { Component, ContentChild, HostBinding, Input } from "@angular/core";
 
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
+
+import { JslibModule } from "../../../angular/src/jslib.module";
+import { I18nPipe } from "../shared/i18n.pipe";
 
 import { BitFormControlAbstraction } from "./form-control.abstraction";
 
 @Component({
   selector: "bit-form-control",
   templateUrl: "form-control.component.html",
+  standalone: true,
+  imports: [NgIf, I18nPipe, JslibModule],
 })
 export class FormControlComponent {
   @Input() label: string;

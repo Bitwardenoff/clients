@@ -1,4 +1,4 @@
-import { FocusKeyManager } from "@angular/cdk/a11y";
+import { FocusKeyManager, A11yModule } from "@angular/cdk/a11y";
 import {
   Component,
   Output,
@@ -17,6 +17,8 @@ import { MenuItemDirective } from "./menu-item.directive";
   selector: "bit-menu",
   templateUrl: "./menu.component.html",
   exportAs: "menuComponent",
+  standalone: true,
+  imports: [A11yModule],
 })
 export class MenuComponent implements AfterContentInit {
   @ViewChild(TemplateRef) templateRef: TemplateRef<any>;

@@ -1,3 +1,4 @@
+import { NgFor, NgIf } from "@angular/common";
 import { Component, HostBinding, Input } from "@angular/core";
 
 import { Utils } from "@bitwarden/common/platform/misc/utils";
@@ -21,6 +22,8 @@ enum CharacterType {
     }}</span>
   </span>`,
   preserveWhitespaces: false,
+  standalone: true,
+  imports: [NgFor, NgIf],
 })
 export class ColorPasswordComponent {
   @Input() password: string = null;

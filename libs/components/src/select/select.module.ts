@@ -7,8 +7,7 @@ import { OptionComponent } from "./option.component";
 import { SelectComponent } from "./select.component";
 
 @NgModule({
-  imports: [CommonModule, NgSelectModule, FormsModule],
-  declarations: [SelectComponent, OptionComponent],
+  imports: [CommonModule, NgSelectModule, FormsModule, SelectComponent, OptionComponent],
   exports: [SelectComponent, OptionComponent],
 })
 export class SelectModule {}

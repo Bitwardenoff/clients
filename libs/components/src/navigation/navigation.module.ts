@@ -11,8 +11,16 @@ import { NavGroupComponent } from "./nav-group.component";
 import { NavItemComponent } from "./nav-item.component";
 
 @NgModule({
-  imports: [CommonModule, SharedModule, IconButtonModule, OverlayModule, RouterModule],
-  declarations: [NavDividerComponent, NavGroupComponent, NavItemComponent],
+  imports: [
+    CommonModule,
+    SharedModule,
+    IconButtonModule,
+    OverlayModule,
+    RouterModule,
+    NavDividerComponent,
+    NavGroupComponent,
+    NavItemComponent,
+  ],
   exports: [NavDividerComponent, NavGroupComponent, NavItemComponent],
 })
 export class NavigationModule {}

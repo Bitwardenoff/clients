@@ -1,12 +1,17 @@
 import { Component, HostBinding, Input } from "@angular/core";
 
+import { FormControlComponent } from "../form-control/form-control.component";
+
 import { RadioGroupComponent } from "./radio-group.component";
+import { RadioInputComponent } from "./radio-input.component";
 
 let nextId = 0;
 
 @Component({
   selector: "bit-radio-button",
   templateUrl: "radio-button.component.html",
+  standalone: true,
+  imports: [FormControlComponent, RadioInputComponent],
 })
 export class RadioButtonComponent {
   @HostBinding("attr.id") @Input() id = `bit-radio-button-${nextId++}`;
