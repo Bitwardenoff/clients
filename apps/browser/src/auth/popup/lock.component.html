@@ -26,6 +26,7 @@
               name="PIN"
               class="monospaced"
               [(ngModel)]="pin"
+              [readOnly]="masterPasswordReadOnly"
               required
               appInputVerbatim
             />
@@ -39,6 +40,7 @@
               aria-describedby="masterPasswordHelp"
               class="monospaced"
               [(ngModel)]="masterPassword"
+              [readOnly]="masterPasswordReadOnly"
               required
               appInputVerbatim
             />

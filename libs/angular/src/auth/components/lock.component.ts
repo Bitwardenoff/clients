@@ -38,6 +38,7 @@ export class LockComponent implements OnInit, OnDestroy {
   email: string;
   pinEnabled = false;
   masterPasswordEnabled = false;
+  masterPasswordReadOnly = false;
   webVaultHostname = "";
   formPromise: Promise<MasterPasswordPolicyResponse>;
   supportsBiometric: boolean;
@@ -93,11 +94,14 @@ export class LockComponent implements OnInit, OnDestroy {
   }
 
   async submit() {
+    this.masterPasswordReadOnly = true;
     if (this.pinEnabled) {
-      return await this.handlePinRequiredUnlock();
+      const result = await this.handlePinRequiredUnlock();
+      this.masterPasswordReadOnly = false;
+      return result;
     }
-
     await this.handleMasterPasswordRequiredUnlock();
+    this.masterPasswordReadOnly = false;
   }
 
   async logOut() {
