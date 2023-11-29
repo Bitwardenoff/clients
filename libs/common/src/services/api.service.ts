@@ -240,11 +240,7 @@ export class ApiService implements ApiServiceAbstraction {
   }
 
   async refreshIdentityToken(): Promise<any> {
-    try {
-      await this.doAuthRefresh();
-    } catch (e) {
-      return Promise.reject(null);
-    }
+    await this.doAuthRefresh();
   }
 
   // TODO: PM-3519: Create and move to AuthRequest Api service
@@ -1897,7 +1893,6 @@ export class ApiService implements ApiServiceAbstraction {
           responseJson.error === "invalid_grant")
       ) {
         await this.logoutCallback(true);
-        return null;
       }
     }
 
