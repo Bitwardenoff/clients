@@ -11,6 +11,7 @@ import {
   PinCryptoService,
   PinCryptoServiceAbstraction,
 } from "@bitwarden/auth/common";
+import { BitwardenSdkServiceAbstraction } from "@bitwarden/common/abstractions/bitwarden-sdk.service.abstraction";
 import { EventCollectionService as EventCollectionServiceAbstraction } from "@bitwarden/common/abstractions/event/event-collection.service";
 import { EventUploadService as EventUploadServiceAbstraction } from "@bitwarden/common/abstractions/event/event-upload.service";
 import { OrganizationApiServiceAbstraction } from "@bitwarden/common/admin-console/abstractions/organization/organization-api.service.abstraction";
@@ -72,6 +73,7 @@ import { DefaultStateProvider } from "@bitwarden/common/platform/state/implement
 import { MemoryStorageService as MemoryStorageServiceForStateProviders } from "@bitwarden/common/platform/state/storage/memory-storage.service";
 /* eslint-enable import/no-restricted-paths */
 import { AuditService } from "@bitwarden/common/services/audit.service";
+import { BitwardenSdkService } from "@bitwarden/common/services/bitwarden-sdk.service";
 import { EventCollectionService } from "@bitwarden/common/services/event/event-collection.service";
 import { EventUploadService } from "@bitwarden/common/services/event/event-upload.service";
 import { SearchService } from "@bitwarden/common/services/search.service";
@@ -199,6 +201,7 @@ export class Main {
   configService: CliConfigService;
   accountService: AccountService;
   globalStateProvider: GlobalStateProvider;
+  bitwardenSdkService: BitwardenSdkServiceAbstraction;
   singleUserStateProvider: SingleUserStateProvider;
   activeUserStateProvider: ActiveUserStateProvider;
   derivedStateProvider: DerivedStateProvider;
@@ -604,6 +607,14 @@ export class Main {
       this.stateService,
       this.organizationService,
       this.eventUploadService,
+    );
+
+    this.bitwardenSdkService = new BitwardenSdkService(
+      this.tokenService,
+      this.environmentService,
+      this.platformUtilsService,
+      this.stateService,
+      customUserAgent,
     );
   }
 

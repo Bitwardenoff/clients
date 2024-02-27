@@ -14,6 +14,8 @@
       "@bitwarden/importer/ui": ["../importer/src/components"],
       "@bitwarden/platform": ["../platform/src"],
       "@bitwarden/node/*": ["../node/src/*"],
+      "@bitwarden/sdk-client": ["../../sdk/languages/js/sdk-client"],
+      "@bitwarden/sdk-wasm": ["../../sdk/languages/js/wasm"],
       "@bitwarden/vault": ["../vault/src"]
     }
   }

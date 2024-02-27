@@ -68,6 +68,7 @@ export class ServeCommand {
       this.main.apiService,
       this.main.organizationService,
       this.main.eventCollectionService,
+      this.main.bitwardenSdkService,
     );
     this.listCommand = new ListCommand(
       this.main.cipherService,

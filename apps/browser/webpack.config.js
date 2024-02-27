@@ -78,7 +78,7 @@ const moduleRules = [
     loader: "@ngtools/webpack",
   },
   {
-    test: /\.wasm$/,
+    test: /argon2\.wasm$/,
     loader: "base64-loader",
     type: "javascript/auto",
   },
@@ -244,8 +244,11 @@ const mainConfig = {
     path: path.resolve(__dirname, "build"),
   },
   module: {
-    noParse: /\.wasm$/,
+    noParse: /argon2\.wasm$/,
     rules: moduleRules,
+  },
+  experiments: {
+    asyncWebAssembly: true,
   },
   plugins: plugins,
 };
@@ -303,12 +306,15 @@ if (manifestVersion == 2) {
           loader: "ts-loader",
         },
         {
-          test: /\.wasm$/,
+          test: /argon2\.wasm$/,
           loader: "base64-loader",
           type: "javascript/auto",
         },
       ],
-      noParse: /\.wasm$/,
+      noParse: /argon2\.wasm$/,
+    },
+    experiments: {
+      asyncWebAssembly: true,
     },
     resolve: {
       extensions: [".ts", ".js"],

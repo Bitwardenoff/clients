@@ -11,6 +11,7 @@ import {
 import { AvatarUpdateService as AccountUpdateServiceAbstraction } from "@bitwarden/common/abstractions/account/avatar-update.service";
 import { ApiService as ApiServiceAbstraction } from "@bitwarden/common/abstractions/api.service";
 import { AuditService as AuditServiceAbstraction } from "@bitwarden/common/abstractions/audit.service";
+import { BitwardenSdkServiceAbstraction } from "@bitwarden/common/abstractions/bitwarden-sdk.service.abstraction";
 import { EventCollectionService as EventCollectionServiceAbstraction } from "@bitwarden/common/abstractions/event/event-collection.service";
 import { EventUploadService as EventUploadServiceAbstraction } from "@bitwarden/common/abstractions/event/event-upload.service";
 import { NotificationsService as NotificationsServiceAbstraction } from "@bitwarden/common/abstractions/notifications.service";
@@ -150,6 +151,7 @@ import { DefaultStateProvider } from "@bitwarden/common/platform/state/implement
 import { AvatarUpdateService } from "@bitwarden/common/services/account/avatar-update.service";
 import { ApiService } from "@bitwarden/common/services/api.service";
 import { AuditService } from "@bitwarden/common/services/audit.service";
+import { BitwardenSdkService } from "@bitwarden/common/services/bitwarden-sdk.service";
 import { EventCollectionService } from "@bitwarden/common/services/event/event-collection.service";
 import { EventUploadService } from "@bitwarden/common/services/event/event-upload.service";
 import { NotificationsService } from "@bitwarden/common/services/notifications.service";
@@ -818,6 +820,16 @@ import { ModalService } from "./modal.service";
       provide: OrgDomainApiServiceAbstraction,
       useClass: OrgDomainApiService,
       deps: [OrgDomainServiceAbstraction, ApiServiceAbstraction],
+    },
+    {
+      provide: BitwardenSdkServiceAbstraction,
+      useClass: BitwardenSdkService,
+      deps: [
+        TokenServiceAbstraction,
+        EnvironmentServiceAbstraction,
+        PlatformUtilsServiceAbstraction,
+        StateServiceAbstraction,
+      ],
     },
     {
       provide: DevicesApiServiceAbstraction,

@@ -18,6 +18,7 @@ import {
 
 import { ModalService } from "@bitwarden/angular/services/modal.service";
 import { FingerprintDialogComponent } from "@bitwarden/auth/angular";
+import { BitwardenSdkServiceAbstraction } from "@bitwarden/common/abstractions/bitwarden-sdk.service.abstraction";
 import { VaultTimeoutSettingsService } from "@bitwarden/common/abstractions/vault-timeout/vault-timeout-settings.service";
 import { VaultTimeoutService } from "@bitwarden/common/abstractions/vault-timeout/vault-timeout.service";
 import { PolicyService } from "@bitwarden/common/admin-console/abstractions/policy/policy.service.abstraction";
@@ -32,6 +33,7 @@ import { MessagingService } from "@bitwarden/common/platform/abstractions/messag
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
 import { StateService } from "@bitwarden/common/platform/abstractions/state.service";
 import { BiometricStateService } from "@bitwarden/common/platform/biometrics/biometric-state.service";
+import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { DialogService } from "@bitwarden/components";
 
 import { SetPinComponent } from "../../auth/popup/components/set-pin.component";
@@ -101,6 +103,7 @@ export class SettingsComponent implements OnInit {
     private modalService: ModalService,
     private userVerificationService: UserVerificationService,
     private dialogService: DialogService,
+    private bitwardenSdkService: BitwardenSdkServiceAbstraction,
     private changeDetectorRef: ChangeDetectorRef,
     private biometricStateService: BiometricStateService,
   ) {
@@ -507,12 +510,17 @@ export class SettingsComponent implements OnInit {
   }
 
   async fingerprint() {
-    const fingerprint = await this.cryptoService.getFingerprint(
+    const client = await this.bitwardenSdkService.getClient();
+    const fingerprint = await client.fingerprint(
       await this.stateService.getUserId(),
+      Utils.fromBufferToB64(await this.cryptoService.getPublicKey()),
     );
+    // const fingerprint = await this.cryptoService.getFingerprint(
+    //   await this.stateService.getUserId(),
+    // );
 
     const dialogRef = FingerprintDialogComponent.open(this.dialogService, {
-      fingerprint,
+      fingerprint: [fingerprint],
     });
 
     return firstValueFrom(dialogRef.closed);

@@ -27,8 +27,10 @@
       "@bitwarden/importer/ui": ["./libs/importer/src/components"],
       "@bitwarden/platform": ["./libs/platform/src"],
       "@bitwarden/node/*": ["./libs/node/src/*"],
-      "@bitwarden/web-vault/*": ["./apps/web/src/*"],
-      "@bitwarden/vault": ["./libs/vault/src"]
+      "@bitwarden/sdk-client": ["../sdk/languages/js/sdk-client"],
+      "@bitwarden/sdk-wasm": ["../sdk/languages/js/wasm"],
+      "@bitwarden/vault": ["./libs/vault/src"],
+      "@bitwarden/web-vault/*": ["./apps/web/src/*"]
     },
     "plugins": [
       {

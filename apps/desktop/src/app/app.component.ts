@@ -16,6 +16,7 @@ import { firstValueFrom, Subject, takeUntil } from "rxjs";
 import { ModalRef } from "@bitwarden/angular/components/modal/modal.ref";
 import { ModalService } from "@bitwarden/angular/services/modal.service";
 import { FingerprintDialogComponent } from "@bitwarden/auth/angular";
+import { BitwardenSdkServiceAbstraction } from "@bitwarden/common/abstractions/bitwarden-sdk.service.abstraction";
 import { EventUploadService } from "@bitwarden/common/abstractions/event/event-upload.service";
 import { NotificationsService } from "@bitwarden/common/abstractions/notifications.service";
 import { SearchService } from "@bitwarden/common/abstractions/search.service";
@@ -39,6 +40,7 @@ import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/pl
 import { StateService } from "@bitwarden/common/platform/abstractions/state.service";
 import { SystemService } from "@bitwarden/common/platform/abstractions/system.service";
 import { BiometricStateService } from "@bitwarden/common/platform/biometrics/biometric-state.service";
+import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { PasswordGenerationServiceAbstraction } from "@bitwarden/common/tools/generator/password";
 import { UserId } from "@bitwarden/common/types/guid";
 import { CipherService } from "@bitwarden/common/vault/abstractions/cipher.service";
@@ -148,6 +150,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private userVerificationService: UserVerificationService,
     private configService: ConfigServiceAbstraction,
     private dialogService: DialogService,
+    private bitwardenSdkService: BitwardenSdkServiceAbstraction,
     private biometricStateService: BiometricStateService,
   ) {}
 
@@ -271,10 +274,18 @@ export class AppComponent implements OnInit, OnDestroy {
             await this.openModal<PremiumComponent>(PremiumComponent, this.premiumRef);
             break;
           case "showFingerprintPhrase": {
-            const fingerprint = await this.cryptoService.getFingerprint(
+            const client = await this.bitwardenSdkService.getClient();
+            const fingerprint = await client.fingerprint(
               await this.stateService.getUserId(),
+              Utils.fromBufferToB64(await this.cryptoService.getPublicKey()),
             );
-            const dialogRef = FingerprintDialogComponent.open(this.dialogService, { fingerprint });
+            //             const fingerprint = await this.cryptoService.getFingerprint(
+            //               await this.stateService.getUserId(),
+            //             );
+
+            const dialogRef = FingerprintDialogComponent.open(this.dialogService, {
+              fingerprint: [fingerprint],
+            });
             await firstValueFrom(dialogRef.closed);
             break;
           }

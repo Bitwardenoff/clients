@@ -16,6 +16,7 @@ import {
 } from "@bitwarden/auth/common";
 import { ApiService } from "@bitwarden/common/abstractions/api.service";
 import { AuditService } from "@bitwarden/common/abstractions/audit.service";
+import { BitwardenSdkServiceAbstraction } from "@bitwarden/common/abstractions/bitwarden-sdk.service.abstraction";
 import { EventCollectionService } from "@bitwarden/common/abstractions/event/event-collection.service";
 import { EventUploadService } from "@bitwarden/common/abstractions/event/event-upload.service";
 import { NotificationsService } from "@bitwarden/common/abstractions/notifications.service";
@@ -577,6 +578,10 @@ function getBgService<T>(service: keyof MainBackground) {
         return new FilePopoutUtilsService(platformUtilsService);
       },
       deps: [PlatformUtilsService],
+    },
+    {
+      provide: BitwardenSdkServiceAbstraction,
+      useFactory: getBgService<BitwardenSdkServiceAbstraction>("bitwardenSdkService"),
     },
     {
       provide: DerivedStateProvider,
