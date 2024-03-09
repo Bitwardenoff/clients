@@ -79,6 +79,7 @@ describe("OverlayBackground", () => {
       autofillSettingsService,
       i18nService,
       platformUtilsService,
+      null,
     );
 
     jest

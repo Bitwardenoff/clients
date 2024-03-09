@@ -99,7 +99,7 @@ export default class TabsBackground {
       return;
     }
 
-    await this.overlayBackground.updateOverlayCiphers();
+    await this.overlayBackground.handleTabChanged();
 
     if (this.main.onUpdatedRan) {
       return;
@@ -129,7 +129,7 @@ export default class TabsBackground {
     await Promise.all([
       this.main.refreshBadge(),
       this.main.refreshMenu(),
-      this.overlayBackground.updateOverlayCiphers(),
+      this.overlayBackground.handleTabChanged(),
     ]);
   };
 }

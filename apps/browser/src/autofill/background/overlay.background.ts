@@ -1,4 +1,4 @@
-import { firstValueFrom } from "rxjs";
+import { firstValueFrom, ReplaySubject, switchMap } from "rxjs";
 
 import { SettingsService } from "@bitwarden/common/abstractions/settings.service";
 import { AuthService } from "@bitwarden/common/auth/abstractions/auth.service";
@@ -11,10 +11,12 @@ import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.servic
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
 import { StateService } from "@bitwarden/common/platform/abstractions/state.service";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
+import { Fido2ClientService } from "@bitwarden/common/src/vault/abstractions/fido2/fido2-client.service.abstraction";
 import { CipherService } from "@bitwarden/common/vault/abstractions/cipher.service";
 import { CipherType } from "@bitwarden/common/vault/enums";
 import { buildCipherIcon } from "@bitwarden/common/vault/icon/build-cipher-icon";
 import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
+import { Fido2CredentialView } from "@bitwarden/common/vault/models/view/fido2-credential.view";
 import { LoginUriView } from "@bitwarden/common/vault/models/view/login-uri.view";
 import { LoginView } from "@bitwarden/common/vault/models/view/login.view";
 
@@ -42,10 +44,13 @@ import {
 } from "./abstractions/overlay.background";
 
 class OverlayBackground implements OverlayBackgroundInterface {
+  private readonly currentTab$ = new ReplaySubject<number>(1);
+
   private readonly openUnlockPopout = openUnlockPopout;
   private readonly openViewVaultItemPopout = openViewVaultItemPopout;
   private readonly openAddEditVaultItemPopout = openAddEditVaultItemPopout;
   private overlayLoginCiphers: Map<string, CipherView> = new Map();
+  private overlayFido2Credentials: Fido2CredentialView[] = [];
   private pageDetailsForTab: Record<number, PageDetail[]> = {};
   private userAuthStatus: AuthenticationStatus = AuthenticationStatus.LoggedOut;
   private overlayButtonPort: chrome.runtime.Port;
@@ -96,8 +101,19 @@ class OverlayBackground implements OverlayBackgroundInterface {
     private autofillSettingsService: AutofillSettingsServiceAbstraction,
     private i18nService: I18nService,
     private platformUtilsService: PlatformUtilsService,
+    private fido2Client: Fido2ClientService,
   ) {
     this.iconsServerUrl = this.environmentService.getIconsUrl();
+
+    this.currentTab$
+      .pipe(switchMap((tabId) => this.fido2Client.availableAutofillCredentials$(tabId)))
+      .subscribe((credentials) => (this.overlayFido2Credentials = credentials));
+  }
+
+  async handleTabChanged(): Promise<void> {
+    this.overlayFido2Credentials = [];
+    this.currentTab$.next((await BrowserApi.getTabFromCurrentWindowId())?.id);
+    await this.updateOverlayCiphers();
   }
 
   /**
@@ -136,9 +152,22 @@ class OverlayBackground implements OverlayBackgroundInterface {
     }
 
     this.overlayLoginCiphers = new Map();
-    const ciphersViews = (await this.cipherService.getAllDecryptedForUrl(currentTab.url)).sort(
+    const tabFido2CredentialIds = this.overlayFido2Credentials.map((c) => c.credentialId);
+    const fido2CipherViews = (await this.cipherService.getAllDecrypted())
+      .filter((c) => tabFido2CredentialIds?.includes(c.login?.fido2Credentials?.[0]?.credentialId))
+      .sort((a, b) => this.cipherService.sortCiphersByLastUsedThenName(a, b));
+    fido2CipherViews.forEach((c) => {
+      // TODO: Fix this hacky hack
+      if (c.name.startsWith("Passkey: ")) {
+        return;
+      }
+
+      c.name = `Passkey: ${c.name}`;
+    });
+    const loginCipherViews = (await this.cipherService.getAllDecryptedForUrl(currentTab.url)).sort(
       (a, b) => this.cipherService.sortCiphersByLastUsedThenName(a, b),
     );
+    const ciphersViews = fido2CipherViews.concat(loginCipherViews);
     for (let cipherIndex = 0; cipherIndex < ciphersViews.length; cipherIndex++) {
       this.overlayLoginCiphers.set(`overlay-cipher-${cipherIndex}`, ciphersViews[cipherIndex]);
     }
@@ -225,6 +254,14 @@ class OverlayBackground implements OverlayBackgroundInterface {
     }
 
     const cipher = this.overlayLoginCiphers.get(overlayCipherId);
+
+    if (cipher.login?.hasFido2Credentials) {
+      await this.fido2Client.autofillCredential(
+        sender.tab.id,
+        cipher.login.fido2Credentials[0].credentialId,
+      );
+      return;
+    }
 
     if (await this.autofillService.isPasswordRepromptRequired(cipher, sender.tab)) {
       return;

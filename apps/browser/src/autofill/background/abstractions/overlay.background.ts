@@ -112,6 +112,7 @@ type OverlayListPortMessageHandlers = {
 interface OverlayBackground {
   init(): Promise<void>;
   removePageDetails(tabId: number): void;
+  handleTabChanged(newTabId: number): Promise<void>;
   updateOverlayCiphers(): void;
 }
 
