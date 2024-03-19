@@ -378,7 +378,7 @@ export class Main {
     this.settingsService = new SettingsService(this.stateService);
     this.domainSettingsService = new DefaultDomainSettingsService(this.stateProvider);
 
-    this.fileUploadService = new FileUploadService(this.logService);
+    this.fileUploadService = new FileUploadService(this.logService, this.apiService);
 
     this.sendService = new SendService(
       this.cryptoService,
