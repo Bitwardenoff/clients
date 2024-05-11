@@ -4,6 +4,18 @@ import { SymmetricCryptoKey } from "@bitwarden/common/platform/models/domain/sym
 
 import { NodeCryptoFunctionService } from "./node-crypto-function.service";
 
+class TestCryptoFunctionService extends NodeCryptoFunctionService {
+  argon2(
+    password: string | Uint8Array,
+    salt: string | Uint8Array,
+    iterations: number,
+    memory: number,
+    parallelism: number,
+  ): Promise<Uint8Array> {
+    throw new Error("Method not implemented.");
+  }
+}
+
 const RsaPublicKey =
   "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAl0Vawl/toXzkEvB82FEtqHP" +
   "4xlU2ab/v0crqIfXfIoWF/XXdHGIdrZeilnRXPPJT1B9dTsasttEZNnua/0Rek/cjNDHtzT52irfoZYS7X6HNIfOi54Q+egP" +
@@ -94,7 +106,7 @@ describe("NodeCrypto Function Service", () => {
     );
 
     it("should fail with prk too small", async () => {
-      const cryptoFunctionService = new NodeCryptoFunctionService();
+      const cryptoFunctionService = new TestCryptoFunctionService();
       const f = cryptoFunctionService.hkdfExpand(
         Utils.fromB64ToArray(prk16Byte),
         "info",
@@ -105,7 +117,7 @@ describe("NodeCrypto Function Service", () => {
     });
 
     it("should fail with outputByteSize is too large", async () => {
-      const cryptoFunctionService = new NodeCryptoFunctionService();
+      const cryptoFunctionService = new TestCryptoFunctionService();
       const f = cryptoFunctionService.hkdfExpand(
         Utils.fromB64ToArray(prk32Byte),
         "info",
@@ -167,7 +179,7 @@ describe("NodeCrypto Function Service", () => {
 
   describe("aesEncrypt CBC mode", () => {
     it("should successfully encrypt data", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const iv = makeStaticByteArray(16);
       const key = makeStaticByteArray(32);
       const data = Utils.fromUtf8ToArray("EncryptMe!");
@@ -176,7 +188,7 @@ describe("NodeCrypto Function Service", () => {
     });
 
     it("should successfully encrypt and then decrypt data", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const iv = makeStaticByteArray(16);
       const key = makeStaticByteArray(32);
       const value = "EncryptMe!";
@@ -189,7 +201,7 @@ describe("NodeCrypto Function Service", () => {
 
   describe("aesDecryptFast CBC mode", () => {
     it("should successfully decrypt data", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const iv = Utils.fromBufferToB64(makeStaticByteArray(16));
       const symKey = new SymmetricCryptoKey(makeStaticByteArray(32));
       const data = "ByUF8vhyX4ddU9gcooznwA==";
@@ -201,7 +213,7 @@ describe("NodeCrypto Function Service", () => {
 
   describe("aesDecryptFast ECB mode", () => {
     it("should successfully decrypt data", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const params = new DecryptParameters<Uint8Array>();
       params.encKey = makeStaticByteArray(32);
       params.data = Utils.fromB64ToArray("z5q2XSxYCdQFdI+qK2yLlw==");
@@ -212,7 +224,7 @@ describe("NodeCrypto Function Service", () => {
 
   describe("aesDecrypt CBC mode", () => {
     it("should successfully decrypt data", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const iv = makeStaticByteArray(16);
       const key = makeStaticByteArray(32);
       const data = Utils.fromB64ToArray("ByUF8vhyX4ddU9gcooznwA==");
@@ -223,7 +235,7 @@ describe("NodeCrypto Function Service", () => {
 
   describe("aesDecrypt ECB mode", () => {
     it("should successfully decrypt data", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const key = makeStaticByteArray(32);
       const data = Utils.fromB64ToArray("z5q2XSxYCdQFdI+qK2yLlw==");
       const decValue = await nodeCryptoFunctionService.aesDecrypt(data, null, key, "ecb");
@@ -233,7 +245,7 @@ describe("NodeCrypto Function Service", () => {
 
   describe("rsaEncrypt", () => {
     it("should successfully encrypt and then decrypt data", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const pubKey = Utils.fromB64ToArray(RsaPublicKey);
       const privKey = Utils.fromB64ToArray(RsaPrivateKey);
       const value = "EncryptMe!";
@@ -246,7 +258,7 @@ describe("NodeCrypto Function Service", () => {
 
   describe("rsaDecrypt", () => {
     it("should successfully decrypt data", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const privKey = Utils.fromB64ToArray(RsaPrivateKey);
       const data = Utils.fromB64ToArray(
         "A1/p8BQzN9UrbdYxUY2Va5+kPLyfZXF9JsZrjeEXcaclsnHurdxVAJcnbEqYMP3UXV" +
@@ -261,7 +273,7 @@ describe("NodeCrypto Function Service", () => {
 
   describe("rsaExtractPublicKey", () => {
     it("should successfully extract key", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const privKey = Utils.fromB64ToArray(RsaPrivateKey);
       const publicKey = await nodeCryptoFunctionService.rsaExtractPublicKey(privKey);
       expect(Utils.fromBufferToB64(publicKey)).toBe(RsaPublicKey);
@@ -279,13 +291,13 @@ describe("NodeCrypto Function Service", () => {
 
   describe("randomBytes", () => {
     it("should make a value of the correct length", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const randomData = await nodeCryptoFunctionService.randomBytes(16);
       expect(randomData.byteLength).toBe(16);
     });
 
     it("should not make the same value twice", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const randomData = await nodeCryptoFunctionService.randomBytes(16);
       const randomData2 = await nodeCryptoFunctionService.randomBytes(16);
       expect(
@@ -296,7 +308,7 @@ describe("NodeCrypto Function Service", () => {
 
   describe("aesGenerateKey", () => {
     it("should delegate to randomBytes", async () => {
-      const nodeCryptoFunctionService = new NodeCryptoFunctionService();
+      const nodeCryptoFunctionService = new TestCryptoFunctionService();
       const spy = jest.spyOn(nodeCryptoFunctionService, "randomBytes");
       await nodeCryptoFunctionService.aesGenerateKey(256);
       expect(spy).toHaveBeenCalledWith(32);
@@ -318,25 +330,25 @@ function testPbkdf2(
   const unicodePassword = "😀password🙏";
 
   it("should create valid " + algorithm + " key from regular input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const key = await cryptoFunctionService.pbkdf2(regularPassword, regularEmail, algorithm, 5000);
     expect(Utils.fromBufferToB64(key)).toBe(regularKey);
   });
 
   it("should create valid " + algorithm + " key from utf8 input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const key = await cryptoFunctionService.pbkdf2(utf8Password, utf8Email, algorithm, 5000);
     expect(Utils.fromBufferToB64(key)).toBe(utf8Key);
   });
 
   it("should create valid " + algorithm + " key from unicode input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const key = await cryptoFunctionService.pbkdf2(unicodePassword, regularEmail, algorithm, 5000);
     expect(Utils.fromBufferToB64(key)).toBe(unicodeKey);
   });
 
   it("should create valid " + algorithm + " key from array buffer input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const key = await cryptoFunctionService.pbkdf2(
       Utils.fromUtf8ToArray(regularPassword),
       Utils.fromUtf8ToArray(regularEmail),
@@ -364,25 +376,25 @@ function testHkdf(
   const unicodeInfo = "😀info🙏";
 
   it("should create valid " + algorithm + " key from regular input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const key = await cryptoFunctionService.hkdf(ikm, regularSalt, regularInfo, 32, algorithm);
     expect(Utils.fromBufferToB64(key)).toBe(regularKey);
   });
 
   it("should create valid " + algorithm + " key from utf8 input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const key = await cryptoFunctionService.hkdf(ikm, utf8Salt, utf8Info, 32, algorithm);
     expect(Utils.fromBufferToB64(key)).toBe(utf8Key);
   });
 
   it("should create valid " + algorithm + " key from unicode input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const key = await cryptoFunctionService.hkdf(ikm, unicodeSalt, unicodeInfo, 32, algorithm);
     expect(Utils.fromBufferToB64(key)).toBe(unicodeKey);
   });
 
   it("should create valid " + algorithm + " key from array buffer input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const key = await cryptoFunctionService.hkdf(
       ikm,
       Utils.fromUtf8ToArray(regularSalt),
@@ -403,7 +415,7 @@ function testHkdfExpand(
   const info = "info";
 
   it("should create valid " + algorithm + " " + outputByteSize + " byte okm", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const okm = await cryptoFunctionService.hkdfExpand(
       Utils.fromB64ToArray(b64prk),
       info,
@@ -425,25 +437,25 @@ function testHash(
   const unicodeValue = "😀HashMe!!!🙏";
 
   it("should create valid " + algorithm + " hash from regular input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const hash = await cryptoFunctionService.hash(regularValue, algorithm);
     expect(Utils.fromBufferToHex(hash)).toBe(regularHash);
   });
 
   it("should create valid " + algorithm + " hash from utf8 input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const hash = await cryptoFunctionService.hash(utf8Value, algorithm);
     expect(Utils.fromBufferToHex(hash)).toBe(utf8Hash);
   });
 
   it("should create valid " + algorithm + " hash from unicode input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const hash = await cryptoFunctionService.hash(unicodeValue, algorithm);
     expect(Utils.fromBufferToHex(hash)).toBe(unicodeHash);
   });
 
   it("should create valid " + algorithm + " hash from array buffer input", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const hash = await cryptoFunctionService.hash(Utils.fromUtf8ToArray(regularValue), algorithm);
     expect(Utils.fromBufferToHex(hash)).toBe(regularHash);
   });
@@ -451,7 +463,7 @@ function testHash(
 
 function testHmac(algorithm: "sha1" | "sha256" | "sha512", mac: string, fast = false) {
   it("should create valid " + algorithm + " hmac", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const value = Utils.fromUtf8ToArray("SignMe!!");
     const key = Utils.fromUtf8ToArray("secretkey");
     let computedMac: ArrayBuffer = null;
@@ -466,7 +478,7 @@ function testHmac(algorithm: "sha1" | "sha256" | "sha512", mac: string, fast = f
 
 function testCompare(fast = false) {
   it("should successfully compare two of the same values", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const a = new Uint8Array(2);
     a[0] = 1;
     a[1] = 2;
@@ -477,7 +489,7 @@ function testCompare(fast = false) {
   });
 
   it("should successfully compare two different values of the same length", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const a = new Uint8Array(2);
     a[0] = 1;
     a[1] = 2;
@@ -491,7 +503,7 @@ function testCompare(fast = false) {
   });
 
   it("should successfully compare two different values of different lengths", async () => {
-    const cryptoFunctionService = new NodeCryptoFunctionService();
+    const cryptoFunctionService = new TestCryptoFunctionService();
     const a = new Uint8Array(2);
     a[0] = 1;
     a[1] = 2;
@@ -508,7 +520,7 @@ function testRsaGenerateKeyPair(length: 1024 | 2048 | 4096) {
   it(
     "should successfully generate a " + length + " bit key pair",
     async () => {
-      const cryptoFunctionService = new NodeCryptoFunctionService();
+      const cryptoFunctionService = new TestCryptoFunctionService();
       const keyPair = await cryptoFunctionService.rsaGenerateKeyPair(length);
       expect(keyPair[0] == null || keyPair[1] == null).toBe(false);
       const publicKey = await cryptoFunctionService.rsaExtractPublicKey(keyPair[1]);
