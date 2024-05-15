@@ -18,7 +18,7 @@ import { SeatRequest } from "../../../models/request/seat.request";
 import { StorageRequest } from "../../../models/request/storage.request";
 import { VerifyBankRequest } from "../../../models/request/verify-bank.request";
 import { ListResponse } from "../../../models/response/list.response";
-import { SyncService } from "../../../vault/abstractions/sync/sync.service.abstraction";
+import { SyncService } from "../../../platform/sync/sync.service";
 import { OrganizationApiServiceAbstraction } from "../../abstractions/organization/organization-api.service.abstraction";
 import { OrganizationApiKeyType } from "../../enums";
 import { OrganizationCollectionManagementUpdateRequest } from "../../models/request/organization-collection-management-update.request";

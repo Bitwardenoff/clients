@@ -45,8 +45,8 @@ import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.servic
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
 import { ValidationService } from "@bitwarden/common/platform/abstractions/validation.service";
+import { SyncService } from "@bitwarden/common/platform/sync";
 import { CollectionService } from "@bitwarden/common/vault/abstractions/collection.service";
-import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
 import { CollectionData } from "@bitwarden/common/vault/models/data/collection.data";
 import { Collection } from "@bitwarden/common/vault/models/domain/collection";
 import { CollectionDetailsResponse } from "@bitwarden/common/vault/models/response/collection.response";

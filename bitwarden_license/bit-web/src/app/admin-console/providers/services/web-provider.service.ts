@@ -9,8 +9,8 @@ import { CreateClientOrganizationRequest } from "@bitwarden/common/billing/model
 import { CryptoService } from "@bitwarden/common/platform/abstractions/crypto.service";
 import { EncryptService } from "@bitwarden/common/platform/abstractions/encrypt.service";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
+import { SyncService } from "@bitwarden/common/platform/sync";
 import { OrgKey } from "@bitwarden/common/types/key";
-import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
 
 @Injectable()
 export class WebProviderService {
