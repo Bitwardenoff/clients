@@ -7,8 +7,8 @@ import { CryptoService } from "../../platform/abstractions/crypto.service";
 import { EncryptService } from "../../platform/abstractions/encrypt.service";
 import { I18nService } from "../../platform/abstractions/i18n.service";
 import { EncString } from "../../platform/models/domain/enc-string";
+import { SyncService } from "../../platform/sync/sync.service";
 import { OrgKey } from "../../types/key";
-import { SyncService } from "../../vault/abstractions/sync/sync.service.abstraction";
 import {
   OrganizationBillingServiceAbstraction,
   OrganizationInformation,
