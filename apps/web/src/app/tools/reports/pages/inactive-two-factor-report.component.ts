@@ -5,8 +5,8 @@ import { OrganizationService } from "@bitwarden/common/admin-console/abstraction
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
+import { SyncService } from "@bitwarden/common/platform/sync";
 import { CipherService } from "@bitwarden/common/vault/abstractions/cipher.service";
-import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
 import { CipherType } from "@bitwarden/common/vault/enums";
 import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
 import { PasswordRepromptService } from "@bitwarden/vault";

@@ -6,7 +6,7 @@ import { AuthService } from "@bitwarden/common/auth/abstractions/auth.service";
 import { AuthenticationStatus } from "@bitwarden/common/auth/enums/authentication-status";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
 import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
-import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
+import { SyncService } from "@bitwarden/common/platform/sync";
 import { ImportServiceAbstraction } from "@bitwarden/importer/core";
 
 import NotificationBackground from "../../autofill/background/notification.background";

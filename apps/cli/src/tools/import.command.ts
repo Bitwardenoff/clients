@@ -2,7 +2,7 @@ import { OptionValues } from "commander";
 import * as inquirer from "inquirer";
 
 import { OrganizationService } from "@bitwarden/common/admin-console/abstractions/organization/organization.service.abstraction";
-import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
+import { SyncService } from "@bitwarden/common/platform/sync";
 import { ImportServiceAbstraction, ImportType } from "@bitwarden/importer/core";
 
 import { Response } from "../models/response";

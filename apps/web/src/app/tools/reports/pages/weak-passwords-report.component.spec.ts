@@ -7,9 +7,9 @@ import { I18nPipe } from "@bitwarden/angular/platform/pipes/i18n.pipe";
 import { ModalService } from "@bitwarden/angular/services/modal.service";
 import { OrganizationService } from "@bitwarden/common/admin-console/abstractions/organization/organization.service.abstraction";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
+import { SyncService } from "@bitwarden/common/platform/sync";
 import { PasswordStrengthServiceAbstraction } from "@bitwarden/common/tools/password-strength";
 import { CipherService } from "@bitwarden/common/vault/abstractions/cipher.service";
-import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
 import { PasswordRepromptService } from "@bitwarden/vault";
 
 import { cipherData } from "./reports-ciphers.mock";

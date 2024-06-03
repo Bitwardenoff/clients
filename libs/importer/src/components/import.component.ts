@@ -32,10 +32,10 @@ import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.servic
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
+import { SyncService } from "@bitwarden/common/platform/sync";
 import { CipherService } from "@bitwarden/common/vault/abstractions/cipher.service";
 import { CollectionService } from "@bitwarden/common/vault/abstractions/collection.service";
 import { FolderService } from "@bitwarden/common/vault/abstractions/folder/folder.service.abstraction";
-import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
 import { CollectionView } from "@bitwarden/common/vault/models/view/collection.view";
 import { FolderView } from "@bitwarden/common/vault/models/view/folder.view";
 import {

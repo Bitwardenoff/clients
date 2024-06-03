@@ -7,7 +7,7 @@ import { AuthService } from "@bitwarden/common/auth/services/auth.service";
 import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
-import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
+import { SyncService } from "@bitwarden/common/platform/sync";
 import { Importer, ImportResult, ImportServiceAbstraction } from "@bitwarden/importer/core";
 
 import NotificationBackground from "../../autofill/background/notification.background";
