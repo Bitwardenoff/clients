@@ -34,7 +34,7 @@ const DECRYPTED_COLLECTION_DATA_KEY = DeriveDefinition.from<
   CollectionView[],
   { collectionService: CollectionService }
 >(ENCRYPTED_COLLECTION_DATA_KEY, {
-  deserializer: (obj) => obj.map((collection) => CollectionView.fromJSON(collection)),
+  deserializer: (obj) => obj?.map((collection) => CollectionView.fromJSON(collection)),
   derive: async (collections: Record<CollectionId, CollectionData>, { collectionService }) => {
     const data: Collection[] = [];
     for (const id in collections ?? {}) {
