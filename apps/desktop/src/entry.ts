@@ -1,3 +1,5 @@
+import { com } from "@bitwarden/desktop-napi";
+
 import { NativeMessagingProxy } from "./proxy/native-messaging-proxy";
 
 // We need to import the other dependencies using `require` since `import` will
@@ -29,6 +31,8 @@ if (
 } else {
   // eslint-disable-next-line
   const Main = require("./main").Main;
+
+  com.register();
 
   const main = new Main();
   main.bootstrap();

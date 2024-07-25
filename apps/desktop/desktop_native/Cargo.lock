@@ -317,6 +317,8 @@ dependencies = [
  "typenum",
  "widestring",
  "windows",
+ "windows-core",
+ "windows-targets 0.52.5",
 ]
 
 [[package]]

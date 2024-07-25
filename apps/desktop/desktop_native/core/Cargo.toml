@@ -26,13 +26,17 @@ typenum = "=1.17.0"
 
 [target.'cfg(windows)'.dependencies]
 widestring = "=1.1.0"
+windows-core = "=0.57.0"
+windows-targets = "=0.52.5"
 windows = { version = "=0.57.0", features = [
   "Foundation",
+  "implement",
   "Security_Credentials_UI",
   "Security_Cryptography",
   "Storage_Streams",
   "Win32_Foundation",
   "Win32_Security_Credentials",
+  "Win32_System_Com",
   "Win32_System_WinRT",
   "Win32_UI_Input_KeyboardAndMouse",
   "Win32_UI_WindowsAndMessaging",

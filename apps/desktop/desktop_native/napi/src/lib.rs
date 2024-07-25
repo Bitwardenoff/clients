@@ -142,3 +142,11 @@ pub mod clipboards {
             .map_err(|e| napi::Error::from_reason(e.to_string()))
     }
 }
+
+#[napi]
+pub mod com {
+    #[napi]
+    pub fn register() {
+        desktop_core::com::register();
+    }
+}
