@@ -9,7 +9,7 @@ export default class NoopBiometricsService implements OsBiometricService {
     return false;
   }
 
-  async getBiometricKey(
+  async getBiometricEncryptedData(
     service: string,
     storageKey: string,
     clientKeyHalfB64: string,
@@ -17,7 +17,7 @@ export default class NoopBiometricsService implements OsBiometricService {
     return null;
   }
 
-  async setBiometricKey(
+  async setBiometricEncryptedData(
     service: string,
     storageKey: string,
     value: string,
@@ -26,7 +26,7 @@ export default class NoopBiometricsService implements OsBiometricService {
     return;
   }
 
-  async deleteBiometricKey(service: string, key: string): Promise<void> {}
+  async deleteBiometricEncryptedData(service: string, key: string): Promise<void> {}
 
   async authenticateBiometric(): Promise<boolean> {
     throw new Error("Not supported on this platform");

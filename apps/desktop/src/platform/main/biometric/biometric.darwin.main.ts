@@ -21,7 +21,7 @@ export default class BiometricDarwinMain implements OsBiometricService {
     }
   }
 
-  async getBiometricKey(service: string, key: string): Promise<string | null> {
+  async getBiometricEncryptedData(service: string, key: string): Promise<string | null> {
     const success = await this.authenticateBiometric();
 
     if (!success) {
@@ -31,7 +31,7 @@ export default class BiometricDarwinMain implements OsBiometricService {
     return await passwords.getPassword(service, key);
   }
 
-  async setBiometricKey(service: string, key: string, value: string): Promise<void> {
+  async setBiometricEncryptedData(service: string, key: string, value: string): Promise<void> {
     if (await this.valueUpToDate(service, key, value)) {
       return;
     }
@@ -39,7 +39,7 @@ export default class BiometricDarwinMain implements OsBiometricService {
     return await passwords.setPassword(service, key, value);
   }
 
-  async deleteBiometricKey(service: string, key: string): Promise<void> {
+  async deleteBiometricEncryptedData(service: string, key: string): Promise<void> {
     return await passwords.deletePassword(service, key);
   }
 

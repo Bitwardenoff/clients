@@ -27,7 +27,7 @@ export default class BiometricWindowsMain implements OsBiometricService {
     return await biometrics.available();
   }
 
-  async getBiometricKey(
+  async getBiometricEncryptedData(
     service: string,
     storageKey: string,
     clientKeyHalfB64: string,
@@ -60,7 +60,7 @@ export default class BiometricWindowsMain implements OsBiometricService {
     }
   }
 
-  async setBiometricKey(
+  async setBiometricEncryptedData(
     service: string,
     storageKey: string,
     value: string,
@@ -89,7 +89,7 @@ export default class BiometricWindowsMain implements OsBiometricService {
     );
   }
 
-  async deleteBiometricKey(service: string, key: string): Promise<void> {
+  async deleteBiometricEncryptedData(service: string, key: string): Promise<void> {
     await passwords.deletePassword(service, key);
     await passwords.deletePassword(service, key + KEY_WITNESS_SUFFIX);
   }

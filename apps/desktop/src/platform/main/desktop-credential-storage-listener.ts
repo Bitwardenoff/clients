@@ -72,7 +72,7 @@ export class DesktopCredentialStorageListener {
             }
             val = await this.biometricService.canAuthBiometric({
               service: serviceName,
-              key: message.key,
+              storageKey: message.key,
               userId: message.userId,
             });
             break;
@@ -93,7 +93,7 @@ export class DesktopCredentialStorageListener {
   private async getPassword(serviceName: string, key: string, keySuffix: string) {
     let val: string;
     if (keySuffix === AuthRequiredSuffix) {
-      val = (await this.biometricService.getBiometricKey(serviceName, key)) ?? null;
+      val = (await this.biometricService.getBiometricEncryptedData(serviceName, key)) ?? null;
     } else {
       val = await passwords.getPassword(serviceName, key);
     }
@@ -112,11 +112,15 @@ export class DesktopCredentialStorageListener {
       const valueObj = JSON.parse(value) as BiometricKey;
       await this.biometricService.setEncryptionKeyHalf({
         service: serviceName,
-        key,
+        storageKey: key,
         value: valueObj?.clientEncKeyHalf,
       });
       // Value is usually a JSON string, but we need to pass the key half as well, so we re-stringify key here.
-      await this.biometricService.setBiometricKey(serviceName, key, JSON.stringify(valueObj?.key));
+      await this.biometricService.setBiometricEncryptedData(
+        serviceName,
+        key,
+        JSON.stringify(valueObj?.key),
+      );
     } else {
       await passwords.setPassword(serviceName, key, value);
     }
@@ -124,7 +128,7 @@ export class DesktopCredentialStorageListener {
 
   private async deletePassword(serviceName: string, key: string, keySuffix: string) {
     if (keySuffix === AuthRequiredSuffix) {
-      await this.biometricService.deleteBiometricKey(serviceName, key);
+      await this.biometricService.deleteBiometricEncryptedData(serviceName, key);
     } else {
       await passwords.deletePassword(serviceName, key);
     }

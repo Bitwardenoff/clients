@@ -61,15 +61,15 @@ export class BiometricsService implements BiometricsServiceAbstraction {
 
   async canAuthBiometric({
     service,
-    key,
+    storageKey,
     userId,
   }: {
     service: string;
-    key: string;
+    storageKey: string;
     userId: UserId;
   }): Promise<boolean> {
     const requireClientKeyHalf = await this.biometricStateService.getRequirePasswordOnStart(userId);
-    const clientKeyHalfB64 = this.getClientKeyHalf(service, key);
+    const clientKeyHalfB64 = this.getClientKeyHalf(service, storageKey);
     const clientKeyHalfSatisfied = !requireClientKeyHalf || !!clientKeyHalfB64;
     return clientKeyHalfSatisfied && (await this.osSupportsBiometric());
   }
@@ -90,11 +90,11 @@ export class BiometricsService implements BiometricsServiceAbstraction {
     return result;
   }
 
-  async getBiometricKey(service: string, storageKey: string): Promise<string | null> {
+  async getBiometricEncryptedData(service: string, storageKey: string): Promise<string | null> {
     return await this.interruptProcessReload(async () => {
       await this.enforceClientKeyHalf(service, storageKey);
 
-      return await this.platformSpecificService.getBiometricKey(
+      return await this.platformSpecificService.getBiometricEncryptedData(
         service,
         storageKey,
         this.getClientKeyHalf(service, storageKey),
@@ -102,10 +102,14 @@ export class BiometricsService implements BiometricsServiceAbstraction {
     });
   }
 
-  async setBiometricKey(service: string, storageKey: string, value: string): Promise<void> {
+  async setBiometricEncryptedData(
+    service: string,
+    storageKey: string,
+    value: string,
+  ): Promise<void> {
     await this.enforceClientKeyHalf(service, storageKey);
 
-    return await this.platformSpecificService.setBiometricKey(
+    return await this.platformSpecificService.setBiometricEncryptedData(
       service,
       storageKey,
       value,
@@ -113,26 +117,25 @@ export class BiometricsService implements BiometricsServiceAbstraction {
     );
   }
 
-  /** Registers the client-side encryption key half for the OS stored Biometric key. The other half is protected by the OS.*/
   async setEncryptionKeyHalf({
     service,
-    key,
+    storageKey,
     value,
   }: {
     service: string;
-    key: string;
+    storageKey: string;
     value: string;
   }): Promise<void> {
     if (value == null) {
-      this.clientKeyHalves.delete(this.clientKeyHalfKey(service, key));
+      this.clientKeyHalves.delete(this.clientKeyHalfKey(service, storageKey));
     } else {
-      this.clientKeyHalves.set(this.clientKeyHalfKey(service, key), value);
+      this.clientKeyHalves.set(this.clientKeyHalfKey(service, storageKey), value);
     }
   }
 
-  async deleteBiometricKey(service: string, storageKey: string): Promise<void> {
+  async deleteBiometricEncryptedData(service: string, storageKey: string): Promise<void> {
     this.clientKeyHalves.delete(this.clientKeyHalfKey(service, storageKey));
-    return await this.platformSpecificService.deleteBiometricKey(service, storageKey);
+    return await this.platformSpecificService.deleteBiometricEncryptedData(service, storageKey);
   }
 
   private async interruptProcessReload<T>(
@@ -156,12 +159,12 @@ export class BiometricsService implements BiometricsServiceAbstraction {
     return response;
   }
 
-  private clientKeyHalfKey(service: string, key: string): string {
-    return `${service}:${key}`;
+  private clientKeyHalfKey(service: string, storageKey: string): string {
+    return `${service}:${storageKey}`;
   }
 
-  private getClientKeyHalf(service: string, key: string): string | undefined {
-    return this.clientKeyHalves.get(this.clientKeyHalfKey(service, key)) ?? undefined;
+  private getClientKeyHalf(service: string, storageKey: string): string | undefined {
+    return this.clientKeyHalves.get(this.clientKeyHalfKey(service, storageKey)) ?? undefined;
   }
 
   private async enforceClientKeyHalf(service: string, storageKey: string): Promise<void> {

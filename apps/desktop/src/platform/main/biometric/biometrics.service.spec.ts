@@ -40,15 +40,15 @@ describe("biometrics tests", function () {
 
     const mockService = mock<OsBiometricService>();
     (sut as any).platformSpecificService = mockService;
-    await sut.setEncryptionKeyHalf({ service: "test", key: "test", value: "test" });
+    await sut.setEncryptionKeyHalf({ service: "test", storageKey: "test", value: "test" });
 
-    await sut.canAuthBiometric({ service: "test", key: "test", userId });
-    expect(mockService.osSupportsBiometric).toBeCalled();
+    await sut.canAuthBiometric({ service: "test", storageKey: "test", userId });
+    expect(mockService.osSupportsBiometric).toHaveBeenCalled();
 
     // FIXME: Verify that this floating promise is intentional. If it is, add an explanatory comment and ensure there is proper error handling.
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     sut.authenticateBiometric();
-    expect(mockService.authenticateBiometric).toBeCalled();
+    expect(mockService.authenticateBiometric).toHaveBeenCalled();
   });
 
   describe("Should create a platform specific service", function () {
@@ -104,7 +104,7 @@ describe("biometrics tests", function () {
     it("should return false if client key half is required and not provided", async () => {
       biometricStateService.getRequirePasswordOnStart.mockResolvedValue(true);
 
-      const result = await sut.canAuthBiometric({ service: "test", key: "test", userId });
+      const result = await sut.canAuthBiometric({ service: "test", storageKey: "test", userId });
 
       expect(result).toBe(false);
     });
@@ -112,17 +112,17 @@ describe("biometrics tests", function () {
     it("should call osSupportsBiometric if client key half is provided", async () => {
       // FIXME: Verify that this floating promise is intentional. If it is, add an explanatory comment and ensure there is proper error handling.
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      sut.setEncryptionKeyHalf({ service: "test", key: "test", value: "test" });
+      sut.setEncryptionKeyHalf({ service: "test", storageKey: "test", value: "test" });
 
-      await sut.canAuthBiometric({ service: "test", key: "test", userId });
-      expect(innerService.osSupportsBiometric).toBeCalled();
+      await sut.canAuthBiometric({ service: "test", storageKey: "test", userId });
+      expect(innerService.osSupportsBiometric).toHaveBeenCalled();
     });
 
     it("should call osSupportBiometric if client key half is not required", async () => {
       biometricStateService.getRequirePasswordOnStart.mockResolvedValue(false);
       innerService.osSupportsBiometric.mockResolvedValue(true);
 
-      const result = await sut.canAuthBiometric({ service: "test", key: "test", userId });
+      const result = await sut.canAuthBiometric({ service: "test", storageKey: "test", userId });
 
       expect(result).toBe(true);
       expect(innerService.osSupportsBiometric).toHaveBeenCalled();
