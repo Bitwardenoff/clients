@@ -10,13 +10,9 @@ import {
   UserDecryptionOptionsServiceAbstraction,
 } from "@bitwarden/auth/common";
 import { ApiService } from "@bitwarden/common/abstractions/api.service";
-import { OrgDomainApiServiceAbstraction } from "@bitwarden/common/admin-console/abstractions/organization-domain/org-domain-api.service.abstraction";
-import { OrganizationDomainSsoDetailsResponse } from "@bitwarden/common/admin-console/abstractions/organization-domain/responses/organization-domain-sso-details.response";
 import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
 import { InternalMasterPasswordServiceAbstraction } from "@bitwarden/common/auth/abstractions/master-password.service.abstraction";
 import { SsoLoginServiceAbstraction } from "@bitwarden/common/auth/abstractions/sso-login.service.abstraction";
-import { HttpStatusCode } from "@bitwarden/common/enums";
-import { ErrorResponse } from "@bitwarden/common/models/response/error.response";
 import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
 import { CryptoFunctionService } from "@bitwarden/common/platform/abstractions/crypto-function.service";
 import { EnvironmentService } from "@bitwarden/common/platform/abstractions/environment.service";
@@ -54,7 +50,6 @@ export class SsoComponent extends BaseSsoComponent implements OnInit {
     environmentService: EnvironmentService,
     passwordGenerationService: PasswordGenerationServiceAbstraction,
     logService: LogService,
-    private orgDomainApiService: OrgDomainApiServiceAbstraction,
     private validationService: ValidationService,
     userDecryptionOptionsService: UserDecryptionOptionsServiceAbstraction,
     configService: ConfigService,
@@ -98,49 +93,20 @@ export class SsoComponent extends BaseSsoComponent implements OnInit {
       } else {
         // Note: this flow is written for web but both browser and desktop
         // redirect here on SSO button click.
+        this.loggingIn = true;
 
-        // Check if email matches any claimed domains
-        if (qParams.email) {
-          // show loading spinner
-          this.loggingIn = true;
-          try {
-            const response: OrganizationDomainSsoDetailsResponse =
-              await this.orgDomainApiService.getClaimedOrgDomainByEmail(qParams.email);
-
-            if (response?.ssoAvailable) {
-              this.identifierFormControl.setValue(response.organizationIdentifier);
-              await this.submit();
-              return;
-            }
-          } catch (error) {
-            this.handleGetClaimedDomainByEmailError(error);
-          }
-
-          this.loggingIn = false;
-        }
-
-        // Fallback to state svc if domain is unclaimed
         const storedIdentifier = await this.ssoLoginService.getOrganizationSsoIdentifier();
         if (storedIdentifier != null) {
           this.identifierFormControl.setValue(storedIdentifier);
         }
+
+        if (qParams.email && this.identifier != null) {
+          await this.submit();
+          return;
+        }
+        this.loggingIn = false;
       }
     });
-  }
-
-  private handleGetClaimedDomainByEmailError(error: any): void {
-    if (error instanceof ErrorResponse) {
-      const errorResponse: ErrorResponse = error as ErrorResponse;
-      switch (errorResponse.statusCode) {
-        case HttpStatusCode.NotFound:
-          //this is a valid case for a domain not found
-          return;
-
-        default:
-          this.validationService.showError(errorResponse);
-          break;
-      }
-    }
   }
 
   submit = async () => {

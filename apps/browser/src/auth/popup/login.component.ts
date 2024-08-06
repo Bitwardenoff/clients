@@ -10,6 +10,7 @@ import {
   LoginEmailServiceAbstraction,
   RegisterRouteService,
 } from "@bitwarden/auth/common";
+import { OrgDomainApiServiceAbstraction } from "@bitwarden/common/admin-console/abstractions/organization-domain/org-domain-api.service.abstraction";
 import { DevicesApiServiceAbstraction } from "@bitwarden/common/auth/abstractions/devices-api.service.abstraction";
 import { SsoLoginServiceAbstraction } from "@bitwarden/common/auth/abstractions/sso-login.service.abstraction";
 import { WebAuthnLoginServiceAbstraction } from "@bitwarden/common/auth/abstractions/webauthn/webauthn-login.service.abstraction";
@@ -20,6 +21,7 @@ import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.servic
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
 import { StateService } from "@bitwarden/common/platform/abstractions/state.service";
+import { ValidationService } from "@bitwarden/common/platform/abstractions/validation.service";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
 import { PasswordGenerationServiceAbstraction } from "@bitwarden/generator-legacy";
@@ -53,6 +55,8 @@ export class LoginComponent extends BaseLoginComponent {
     ssoLoginService: SsoLoginServiceAbstraction,
     webAuthnLoginService: WebAuthnLoginServiceAbstraction,
     registerRouteService: RegisterRouteService,
+    orgDomainApiService: OrgDomainApiServiceAbstraction,
+    validationService: ValidationService,
   ) {
     super(
       devicesApiService,
@@ -74,6 +78,8 @@ export class LoginComponent extends BaseLoginComponent {
       ssoLoginService,
       webAuthnLoginService,
       registerRouteService,
+      orgDomainApiService,
+      validationService,
     );
     super.onSuccessfulLogin = async () => {
       await syncService.fullSync(true);

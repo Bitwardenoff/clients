@@ -10,11 +10,14 @@ import {
   PasswordLoginCredentials,
   RegisterRouteService,
 } from "@bitwarden/auth/common";
+import { OrgDomainApiServiceAbstraction } from "@bitwarden/common/admin-console/abstractions/organization-domain/org-domain-api.service.abstraction";
 import { DevicesApiServiceAbstraction } from "@bitwarden/common/auth/abstractions/devices-api.service.abstraction";
 import { SsoLoginServiceAbstraction } from "@bitwarden/common/auth/abstractions/sso-login.service.abstraction";
 import { WebAuthnLoginServiceAbstraction } from "@bitwarden/common/auth/abstractions/webauthn/webauthn-login.service.abstraction";
 import { AuthResult } from "@bitwarden/common/auth/models/domain/auth-result";
 import { ForceSetPasswordReason } from "@bitwarden/common/auth/models/domain/force-set-password-reason";
+import { HttpStatusCode } from "@bitwarden/common/enums";
+import { ErrorResponse } from "@bitwarden/common/models/response/error.response";
 import { AppIdService } from "@bitwarden/common/platform/abstractions/app-id.service";
 import { CryptoFunctionService } from "@bitwarden/common/platform/abstractions/crypto-function.service";
 import { EnvironmentService } from "@bitwarden/common/platform/abstractions/environment.service";
@@ -22,8 +25,10 @@ import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.servic
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
 import { StateService } from "@bitwarden/common/platform/abstractions/state.service";
+import { ValidationService } from "@bitwarden/common/platform/abstractions/validation.service";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { PasswordGenerationServiceAbstraction } from "@bitwarden/generator-legacy";
+
 
 import {
   AllValidationErrors,
@@ -43,6 +48,7 @@ export class LoginComponent extends CaptchaProtectedComponent implements OnInit,
   onSuccessfulLoginTwoFactorNavigate: () => Promise<any>;
   onSuccessfulLoginForceResetNavigate: () => Promise<any>;
   showLoginWithDevice: boolean;
+  showSSO: boolean;
   validatedEmail = false;
   paramEmailSet = false;
 
@@ -91,6 +97,8 @@ export class LoginComponent extends CaptchaProtectedComponent implements OnInit,
     protected ssoLoginService: SsoLoginServiceAbstraction,
     protected webAuthnLoginService: WebAuthnLoginServiceAbstraction,
     protected registerRouteService: RegisterRouteService,
+    protected orgDomainApiService: OrgDomainApiServiceAbstraction,
+    protected validationService: ValidationService,
   ) {
     super(environmentService, i18nService, platformUtilsService);
   }
@@ -367,6 +375,31 @@ export class LoginComponent extends CaptchaProtectedComponent implements OnInit,
       );
     } catch (e) {
       this.showLoginWithDevice = false;
+    }
+
+    try {
+      const ssoResponse = await this.orgDomainApiService.getClaimedOrgDomainByEmail(email);
+      this.showSSO = ssoResponse?.ssoAvailable;
+      if (ssoResponse?.ssoAvailable) {
+        await this.ssoLoginService.setOrganizationSsoIdentifier(ssoResponse.organizationIdentifier);
+      }
+    } catch (error) {
+      this.handleGetClaimedDomainByEmailError(error);
+    }
+  }
+
+  private handleGetClaimedDomainByEmailError(error: any): void {
+    if (error instanceof ErrorResponse) {
+      const errorResponse: ErrorResponse = error as ErrorResponse;
+      switch (errorResponse.statusCode) {
+        case HttpStatusCode.NotFound:
+          //this is a valid case for a domain not found
+          return;
+
+        default:
+          this.validationService.showError(errorResponse);
+          break;
+      }
     }
   }
 }
