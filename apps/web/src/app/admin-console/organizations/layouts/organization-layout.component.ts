@@ -58,6 +58,10 @@ export class OrganizationLayoutComponent implements OnInit, OnDestroy {
     FeatureFlag.EnableConsolidatedBilling,
   );
 
+  protected actionableInsightsEnabled$ = this.configService.getFeatureFlag$(
+    FeatureFlag.ActionableInsights,
+  );
+
   constructor(
     private route: ActivatedRoute,
     private organizationService: OrganizationService,

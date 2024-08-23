@@ -8954,5 +8954,17 @@
   },
   "additionalStorageGbMessage": {
     "message": "GB additional storage"
+  },
+  "appGuard": {
+    "message": "AppGuard"
+  },
+  "secureApplications": {
+    "message": "Secure your most critical applications"
+  },
+  "prioritizeApplicationsIdentifyWeakPasswordsNotifyUsers": {
+    "message": "Prioritize your critical applications, identify weak, exposed and reused passwords, notify users for remediation and more."
+  },
+  "selectApplications": {
+    "message": "Select Applications"
   }
 }

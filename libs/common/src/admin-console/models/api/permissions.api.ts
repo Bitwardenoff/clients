@@ -4,6 +4,7 @@ export class PermissionsApi extends BaseResponse {
   accessEventLogs: boolean;
   accessImportExport: boolean;
   accessReports: boolean;
+  accessAppGuard: boolean;
   createNewCollections: boolean;
   editAnyCollection: boolean;
   deleteAnyCollection: boolean;
@@ -25,6 +26,7 @@ export class PermissionsApi extends BaseResponse {
     this.accessEventLogs = this.getResponseProperty("AccessEventLogs");
     this.accessImportExport = this.getResponseProperty("AccessImportExport");
     this.accessReports = this.getResponseProperty("AccessReports");
+    this.accessAppGuard = this.getResponseProperty("AccessAppGuard");
 
     this.createNewCollections = this.getResponseProperty("CreateNewCollections");
     this.editAnyCollection = this.getResponseProperty("EditAnyCollection");

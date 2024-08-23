@@ -96,6 +96,9 @@ function getReportRoute(organization: Organization): string {
   if (organization.canAccessReports) {
     return "reports";
   }
+  if (organization.canAccessAppGuard) {
+    return "app-guard";
+  }
   return undefined;
 }
 

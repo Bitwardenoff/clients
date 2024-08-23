@@ -1,0 +1,30 @@
+<app-header></app-header>
+
+<div *ngIf="!loading && view$ | async as view; else spinner">
+  <div *ngIf="view.applications.length > 0; else no_applications">Apps here</div>
+
+  <ng-template #no_applications>
+    <div
+      class="tw-mx-auto tw-mt-5 tw-flex tw-max-w-lg tw-flex-col tw-items-center tw-justify-center tw-p-8"
+    >
+      <h2 bitTypography="h2" class="text-center tw-mb-6">
+        {{ "secureApplications" | i18n }}
+      </h2>
+      <p bitTypography="body1" class="text-center tw-mb-6">
+        {{ "prioritizeApplicationsIdentifyWeakPasswordsNotifyUsers" | i18n }}
+      </p>
+
+      <div class="tw-mb-6">
+        <button type="button" bitButton buttonType="primary" block routerLink="applications">
+          {{ "selectApplications" | i18n }}
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</div>
+
+<ng-template #spinner>
+  <div class="tw-items-center tw-justify-center tw-pt-64 tw-text-center">
+    <i class="bwi bwi-spinner bwi-spin bwi-3x"></i>
+  </div>
+</ng-template>

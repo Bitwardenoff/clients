@@ -162,6 +162,10 @@ export class Organization {
     return this.isAdmin || this.permissions.accessReports;
   }
 
+  get canAccessAppGuard() {
+    return this.isAdmin || this.permissions.accessAppGuard;
+  }
+
   get canCreateNewCollections() {
     return (
       !this.limitCollectionCreationDeletion || this.isAdmin || this.permissions.createNewCollections

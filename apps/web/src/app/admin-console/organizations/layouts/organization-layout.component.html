@@ -28,6 +28,13 @@
       route="reporting"
       *ngIf="canShowReportsTab(organization)"
     >
+      <ng-container *ngIf="actionableInsightsEnabled$ | async">
+        <bit-nav-item
+          [text]="'appGuard' | i18n"
+          route="reporting/app-guard"
+          *ngIf="organization.canAccessAppGuard"
+        ></bit-nav-item>
+      </ng-container>
       <bit-nav-item
         [text]="'eventLogs' | i18n"
         route="reporting/events"

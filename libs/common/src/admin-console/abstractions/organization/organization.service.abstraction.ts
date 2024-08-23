@@ -30,7 +30,7 @@ export function canAccessGroupsTab(org: Organization): boolean {
 }
 
 export function canAccessReportingTab(org: Organization): boolean {
-  return org.canAccessReports || org.canAccessEventLogs;
+  return org.canAccessReports || org.canAccessEventLogs || org.canAccessAppGuard;
 }
 
 export function canAccessBillingTab(org: Organization): boolean {
