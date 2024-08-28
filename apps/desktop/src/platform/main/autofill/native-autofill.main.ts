@@ -13,6 +13,8 @@ export type RunCommandParams<C extends CommandDefinition> = {
 export type RunCommandResult<C extends CommandDefinition> = C["output"];
 
 export class NativeAutofillMain {
+  private ipcServer: autofill.IpcServer | null;
+
   constructor(private logService: LogService) {}
 
   async init() {
@@ -23,6 +25,13 @@ export class NativeAutofillMain {
         params: RunCommandParams<C>,
       ): Promise<RunCommandResult<C>> => {
         return this.runCommand(params);
+      },
+    );
+
+    this.ipcServer = await autofill.IpcServer.listen(
+      "autofill",
+      (error: Error | null, data: autofill.IpcMessage) => {
+        this.logService.warning("autofill.IpcServer.listen", error, data);
       },
     );
   }
