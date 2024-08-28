@@ -20,6 +20,7 @@ import { EventUploadService } from "@bitwarden/common/services/event/event-uploa
 import { VaultTimeoutService } from "@bitwarden/common/services/vault-timeout/vault-timeout.service";
 import { UserId } from "@bitwarden/common/types/guid";
 
+import { DesktopAutofillService } from "../../autofill/services/desktop-autofill.service";
 import { I18nRendererService } from "../../platform/services/i18n.renderer.service";
 import { NativeMessagingService } from "../../services/native-messaging.service";
 
@@ -41,6 +42,7 @@ export class InitService {
     private encryptService: EncryptService,
     private userAutoUnlockKeyService: UserAutoUnlockKeyService,
     private accountService: AccountService,
+    private autofillService: DesktopAutofillService,
     @Inject(DOCUMENT) private document: Document,
   ) {}
 
@@ -75,6 +77,8 @@ export class InitService {
 
       const containerService = new ContainerService(this.cryptoService, this.encryptService);
       containerService.attachToGlobal(this.win);
+
+      await this.autofillService.init();
     };
   }
 }
