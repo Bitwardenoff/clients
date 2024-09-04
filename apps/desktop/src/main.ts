@@ -223,7 +223,7 @@ export class Main {
     this.clipboardMain = new ClipboardMain();
     this.clipboardMain.init();
 
-    this.nativeAutofillMain = new NativeAutofillMain(this.logService);
+    this.nativeAutofillMain = new NativeAutofillMain(this.logService, this.windowMain);
     void this.nativeAutofillMain.init();
   }
 

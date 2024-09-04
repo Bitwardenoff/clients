@@ -55,6 +55,7 @@ import { PasswordGenerationServiceAbstraction } from "@bitwarden/generator-legac
 import { DeleteAccountComponent } from "../auth/delete-account.component";
 import { LoginApprovalComponent } from "../auth/login/login-approval.component";
 import { MenuAccount, MenuUpdateRequest } from "../main/menu/menu.updater";
+import { NativeAutofillRendererService } from "../platform/services/native-autofill.renderer.service";
 import { PremiumComponent } from "../vault/app/accounts/premium.component";
 import { FolderAddEditComponent } from "../vault/app/vault/folder-add-edit.component";
 
@@ -150,6 +151,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private stateEventRunnerService: StateEventRunnerService,
     private providerService: ProviderService,
     private accountService: AccountService,
+    private nativeAutofillRendererService: NativeAutofillRendererService,
   ) {}
 
   ngOnInit() {

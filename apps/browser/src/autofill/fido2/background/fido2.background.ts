@@ -14,6 +14,7 @@ import { VaultSettingsService } from "@bitwarden/common/vault/abstractions/vault
 import { BrowserApi } from "../../../platform/browser/browser-api";
 import { ScriptInjectorService } from "../../../platform/services/abstractions/script-injector.service";
 import { AbortManager } from "../../../vault/background/abort-manager";
+import { BrowserFido2ParentWindowReference } from "../../../vault/fido2/browser-fido2-user-interface.service";
 import { Fido2ContentScript, Fido2ContentScriptId } from "../enums/fido2-content-script.enum";
 import { Fido2PortName } from "../enums/fido2-port-name.enum";
 
@@ -47,7 +48,7 @@ export class Fido2Background implements Fido2BackgroundInterface {
 
   constructor(
     private logService: LogService,
-    private fido2ClientService: Fido2ClientService,
+    private fido2ClientService: Fido2ClientService<BrowserFido2ParentWindowReference>,
     private vaultSettingsService: VaultSettingsService,
     private scriptInjectorService: ScriptInjectorService,
   ) {}

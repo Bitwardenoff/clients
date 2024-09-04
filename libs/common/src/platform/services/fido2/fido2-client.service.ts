@@ -37,9 +37,11 @@ import { Fido2Utils } from "./fido2-utils";
  *
  * It is highly recommended that the W3C specification is used a reference when reading this code.
  */
-export class Fido2ClientService implements Fido2ClientServiceAbstraction {
+export class Fido2ClientService<ParentWindowReference>
+  implements Fido2ClientServiceAbstraction<ParentWindowReference>
+{
   constructor(
-    private authenticator: Fido2AuthenticatorService,
+    private authenticator: Fido2AuthenticatorService<ParentWindowReference>,
     private configService: ConfigService,
     private authService: AuthService,
     private vaultSettingsService: VaultSettingsService,
@@ -72,7 +74,7 @@ export class Fido2ClientService implements Fido2ClientServiceAbstraction {
 
   async createCredential(
     params: CreateCredentialParams,
-    tab: chrome.tabs.Tab,
+    window: ParentWindowReference,
     abortController = new AbortController(),
   ): Promise<CreateCredentialResult> {
     const parsedOrigin = parse(params.origin, { allowPrivateDomains: true });
@@ -171,7 +173,7 @@ export class Fido2ClientService implements Fido2ClientServiceAbstraction {
     try {
       makeCredentialResult = await this.authenticator.makeCredential(
         makeCredentialParams,
-        tab,
+        window,
         abortController,
       );
     } catch (error) {
@@ -225,7 +227,7 @@ export class Fido2ClientService implements Fido2ClientServiceAbstraction {
 
   async assertCredential(
     params: AssertCredentialParams,
-    tab: chrome.tabs.Tab,
+    window: ParentWindowReference,
     abortController = new AbortController(),
   ): Promise<AssertCredentialResult> {
     const parsedOrigin = parse(params.origin, { allowPrivateDomains: true });
@@ -279,7 +281,7 @@ export class Fido2ClientService implements Fido2ClientServiceAbstraction {
     try {
       getAssertionResult = await this.authenticator.getAssertion(
         getAssertionParams,
-        tab,
+        window,
         abortController,
       );
     } catch (error) {

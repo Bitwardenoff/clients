@@ -19,6 +19,7 @@ import {
 import { BrowserApi } from "../../../platform/browser/browser-api";
 import { BrowserScriptInjectorService } from "../../../platform/services/browser-script-injector.service";
 import { AbortManager } from "../../../vault/background/abort-manager";
+import { BrowserFido2ParentWindowReference } from "../../../vault/fido2/browser-fido2-user-interface.service";
 import { Fido2ContentScript, Fido2ContentScriptId } from "../enums/fido2-content-script.enum";
 import { Fido2PortName } from "../enums/fido2-port-name.enum";
 
@@ -51,7 +52,7 @@ describe("Fido2Background", () => {
   let tabMock!: MockProxy<chrome.tabs.Tab>;
   let senderMock!: MockProxy<chrome.runtime.MessageSender>;
   let logService!: MockProxy<LogService>;
-  let fido2ClientService!: MockProxy<Fido2ClientService>;
+  let fido2ClientService!: MockProxy<Fido2ClientService<BrowserFido2ParentWindowReference>>;
   let vaultSettingsService!: MockProxy<VaultSettingsService>;
   let scriptInjectorServiceMock!: MockProxy<BrowserScriptInjectorService>;
   let enablePasskeysMock$!: BehaviorSubject<boolean>;
@@ -65,7 +66,7 @@ describe("Fido2Background", () => {
     });
     senderMock = mock<chrome.runtime.MessageSender>({ id: "1", tab: tabMock });
     logService = mock<LogService>();
-    fido2ClientService = mock<Fido2ClientService>();
+    fido2ClientService = mock<Fido2ClientService<BrowserFido2ParentWindowReference>>();
     vaultSettingsService = mock<VaultSettingsService>();
     abortManagerMock = mock<AbortManager>();
     abortController = mock<AbortController>();

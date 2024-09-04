@@ -32,6 +32,8 @@ import { CryptoFunctionService as CryptoFunctionServiceAbstraction } from "@bitw
 import { CryptoService as CryptoServiceAbstraction } from "@bitwarden/common/platform/abstractions/crypto.service";
 import { EncryptService } from "@bitwarden/common/platform/abstractions/encrypt.service";
 import { EnvironmentService } from "@bitwarden/common/platform/abstractions/environment.service";
+import { Fido2AuthenticatorService as Fido2AuthenticatorServiceAbstraction } from "@bitwarden/common/platform/abstractions/fido2/fido2-authenticator.service.abstraction";
+import { Fido2UserInterfaceService as Fido2UserInterfaceServiceAbstraction } from "@bitwarden/common/platform/abstractions/fido2/fido2-user-interface.service.abstraction";
 import { FileDownloadService } from "@bitwarden/common/platform/abstractions/file-download/file-download.service";
 import { I18nService as I18nServiceAbstraction } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { KeyGenerationService as KeyGenerationServiceAbstraction } from "@bitwarden/common/platform/abstractions/key-generation.service";
@@ -50,12 +52,14 @@ import { Message, MessageListener, MessageSender } from "@bitwarden/common/platf
 // eslint-disable-next-line no-restricted-imports -- Used for dependency injection
 import { SubjectMessageSender } from "@bitwarden/common/platform/messaging/internal";
 import { GlobalState } from "@bitwarden/common/platform/models/domain/global-state";
+import { Fido2AuthenticatorService } from "@bitwarden/common/platform/services/fido2/fido2-authenticator.service";
 import { MemoryStorageService } from "@bitwarden/common/platform/services/memory-storage.service";
 import { MigrationRunner } from "@bitwarden/common/platform/services/migration-runner";
 import { SystemService } from "@bitwarden/common/platform/services/system.service";
 import { GlobalStateProvider, StateProvider } from "@bitwarden/common/platform/state";
 // eslint-disable-next-line import/no-restricted-paths -- Implementation for memory storage
 import { MemoryStorageService as MemoryStorageServiceForStateProviders } from "@bitwarden/common/platform/state/storage/memory-storage.service";
+import { SyncService } from "@bitwarden/common/platform/sync";
 import { VaultTimeoutStringType } from "@bitwarden/common/types/vault-timeout.type";
 import { CipherService as CipherServiceAbstraction } from "@bitwarden/common/vault/abstractions/cipher.service";
 import { DialogService } from "@bitwarden/components";
@@ -65,6 +69,7 @@ import { PinServiceAbstraction } from "../../../../../libs/auth/src/common/abstr
 import { DesktopAutofillSettingsService } from "../../autofill/services/desktop-autofill-settings.service";
 import { DesktopAutofillService } from "../../autofill/services/desktop-autofill.service";
 import { Account } from "../../models/account";
+import { DesktopFido2UserInterfaceService } from "../../platform/services/desktop-fido2-user-interface.service";
 import { DesktopSettingsService } from "../../platform/services/desktop-settings.service";
 import { ElectronCryptoService } from "../../platform/services/electron-crypto.service";
 import { ElectronLogRendererService } from "../../platform/services/electron-log.renderer.service";
@@ -77,6 +82,7 @@ import { ElectronRendererSecureStorageService } from "../../platform/services/el
 import { ElectronRendererStorageService } from "../../platform/services/electron-renderer-storage.service";
 import { ElectronStateService } from "../../platform/services/electron-state.service";
 import { I18nRendererService } from "../../platform/services/i18n.renderer.service";
+import { NativeAutofillRendererService } from "../../platform/services/native-autofill.renderer.service";
 import { fromIpcMessaging } from "../../platform/utils/from-ipc-messaging";
 import { fromIpcSystemTheme } from "../../platform/utils/from-ipc-system-theme";
 import { EncryptedMessageHandlerService } from "../../services/encrypted-message-handler.service";
@@ -284,6 +290,21 @@ const safeProviders: SafeProvider[] = [
   safeProvider({
     provide: DesktopAutofillService,
     deps: [LogService, CipherServiceAbstraction],
+  }),
+  safeProvider({
+    provide: Fido2UserInterfaceServiceAbstraction,
+    useClass: DesktopFido2UserInterfaceService,
+    deps: [AuthServiceAbstraction, CipherServiceAbstraction, LogService],
+  }),
+  safeProvider({
+    provide: Fido2AuthenticatorServiceAbstraction,
+    useClass: Fido2AuthenticatorService,
+    deps: [CipherServiceAbstraction, Fido2UserInterfaceServiceAbstraction, SyncService, LogService],
+  }),
+  safeProvider({
+    provide: NativeAutofillRendererService,
+    useClass: NativeAutofillRendererService,
+    deps: [CipherServiceAbstraction, Fido2AuthenticatorServiceAbstraction, LogService],
   }),
   safeProvider({
     provide: NativeMessagingManifestService,
