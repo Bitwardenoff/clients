@@ -7,6 +7,7 @@ module.exports = {
   testMatch: ["**/+(*.)+(spec).+(ts)"],
   preset: "ts-jest",
   testEnvironment: "jsdom",
+  setupFilesAfterEnv: ["<rootDir>/test.setup.ts"],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions?.paths || {}, {
     prefix: "<rootDir>/../../../",
   }),

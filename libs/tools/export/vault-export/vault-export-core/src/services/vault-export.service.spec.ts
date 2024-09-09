@@ -1,3 +1,6 @@
+import { TransformStream } from "node:stream/web";
+globalThis.TransformStream = TransformStream;
+
 import { mock, MockProxy } from "jest-mock-extended";
 
 import { PinServiceAbstraction } from "@bitwarden/auth/common";
@@ -225,7 +228,10 @@ describe("VaultExportService", () => {
         jest.spyOn(Utils, "fromBufferToB64").mockReturnValue(salt);
         cipherService.getAllDecrypted.mockResolvedValue(UserCipherViews.slice(0, 1));
 
-        exportString = await exportService.getPasswordProtectedExport(password);
+        exportString = (await exportService.getPasswordProtectedExport(
+          "encrypted_json",
+          password,
+        )) as string;
         exportObject = JSON.parse(exportString);
       });
 
@@ -251,7 +257,10 @@ describe("VaultExportService", () => {
 
       it("has a mac property", async () => {
         cryptoService.encrypt.mockResolvedValue(mac);
-        exportString = await exportService.getPasswordProtectedExport(password);
+        exportString = (await exportService.getPasswordProtectedExport(
+          "encrypted_json",
+          password,
+        )) as string;
         exportObject = JSON.parse(exportString);
 
         expect(exportObject.encKeyValidation_DO_NOT_EDIT).toEqual(mac.encryptedString);
@@ -259,7 +268,10 @@ describe("VaultExportService", () => {
 
       it("has data property", async () => {
         cryptoService.encrypt.mockResolvedValue(data);
-        exportString = await exportService.getPasswordProtectedExport(password);
+        exportString = (await exportService.getPasswordProtectedExport(
+          "encrypted_json",
+          password,
+        )) as string;
         exportObject = JSON.parse(exportString);
 
         expect(exportObject.data).toEqual(data.encryptedString);

@@ -942,8 +942,8 @@
   "unexpectedError": {
     "message": "An unexpected error has occurred."
   },
-  "expirationDateError" : {
-    "message":"Please select an expiration date that is in the future."
+  "expirationDateError": {
+    "message": "Please select an expiration date that is in the future."
   },
   "emailAddress": {
     "message": "Email address"
@@ -951,8 +951,8 @@
   "yourVaultIsLockedV2": {
     "message": "Your vault is locked"
   },
-  "uuid":{
-    "message" : "UUID"
+  "uuid": {
+    "message": "UUID"
   },
   "unlock": {
     "message": "Unlock"
@@ -1188,10 +1188,10 @@
   "copyUuid": {
     "message": "Copy UUID"
   },
-  "errorRefreshingAccessToken":{
+  "errorRefreshingAccessToken": {
     "message": "Access Token Refresh Error"
   },
-  "errorRefreshingAccessTokenDesc":{
+  "errorRefreshingAccessTokenDesc": {
     "message": "No refresh token or API keys found. Please try logging out and logging back in."
   },
   "warning": {
@@ -1253,6 +1253,12 @@
   },
   "passwordProtectedOptionDescription": {
     "message": "Set a file password to encrypt the export and import it to any Bitwarden account using the password for decryption."
+  },
+  "zipPasswordProtectedOptionTitle": {
+    "message": "Encrypt exported zip archive"
+  },
+  "zipPasswordProtectedOptionDescription": {
+    "message": "Set a file password to encrypt the zip export and import it to any Bitwarden account using the password for decryption."
   },
   "exportTypeHeading": {
     "message": "Export type"
@@ -4906,7 +4912,7 @@
   "youNeedApprovalFromYourAdminToTrySecretsManager": {
     "message": "You need approval from your administrator to try Secrets Manager."
   },
-  "smAccessRequestEmailSent" : {
+  "smAccessRequestEmailSent": {
     "message": "Access request for secrets manager email sent to admins."
   },
   "requestAccessSMDefaultEmailContent": {
@@ -4915,8 +4921,8 @@
   "giveMembersAccess": {
     "message": "Give members access:"
   },
-  "viewAndSelectTheMembers" : {
-    "message" :"view and select the members you want to give access to Secrets Manager."
+  "viewAndSelectTheMembers": {
+    "message": "view and select the members you want to give access to Secrets Manager."
   },
   "openYourOrganizations": {
     "message": "Open your organization's"
@@ -5837,10 +5843,10 @@
   "selfHostedBaseUrlHint": {
     "message": "Specify the base URL of your on-premises hosted Bitwarden installation. Example: https://bitwarden.company.com"
   },
-  "selfHostedCustomEnvHeader" :{
+  "selfHostedCustomEnvHeader": {
     "message": "For advanced configuration, you can specify the base URL of each service independently."
   },
-  "selfHostedEnvFormInvalid" :{
+  "selfHostedEnvFormInvalid": {
     "message": "You must add either the base Server URL or at least one custom environment."
   },
   "apiUrl": {
@@ -7602,7 +7608,7 @@
       }
     }
   },
-  "verificationRequired" : {
+  "verificationRequired": {
     "message": "Verification required",
     "description": "Default title for the user verification dialog."
   },
@@ -8394,7 +8400,7 @@
   "deleteProviderRecoverConfirmDesc": {
     "message": "You have requested to delete this Provider. Use the button below to confirm."
   },
- "deleteProviderWarning": {
+  "deleteProviderWarning": {
     "message": "Deleting your provider is permanent. It cannot be undone."
   },
   "errorAssigningTargetCollection": {
@@ -8407,7 +8413,7 @@
     "message": "Integrations & SDKs",
     "description": "The title for the section that deals with integrations and SDKs."
   },
-  "integrations":{
+  "integrations": {
     "message": "Integrations"
   },
   "integrationsDesc": {
@@ -8478,7 +8484,7 @@
   },
   "createdNewClient": {
     "message": "Successfully created new client"
-   },
+  },
   "noAccess": {
     "message": "No access"
   },
@@ -8693,11 +8699,11 @@
     "placeholders": {
       "value": {
         "content": "$1",
-        "example":"increments of 100,000"
+        "example": "increments of 100,000"
       }
     }
   },
-  "providerReinstate":{
+  "providerReinstate": {
     "message": " Contact Customer Support to reinstate your subscription."
   },
   "secretPeopleDescription": {

@@ -98,4 +98,53 @@
       </bit-form-field>
     </ng-container>
   </ng-container>
+
+  <ng-container *ngIf="format === 'zip'">
+    <bit-form-control>
+      <bit-label>{{ "zipPasswordProtectedOptionTitle" | i18n }}</bit-label>
+      <input type="checkbox" bitCheckbox formControlName="passwordProtected" />
+      <bit-hint>{{ "zipPasswordProtectedOptionDescription" | i18n }}</bit-hint>
+    </bit-form-control>
+    <ng-container *ngIf="zipPasswordProtected">
+      <div class="tw-mb-3" *ngIf="zipPasswordProtected">
+        <bit-form-field>
+          <bit-label>{{ "filePassword" | i18n }}</bit-label>
+          <input
+            bitInput
+            type="password"
+            id="filePassword"
+            formControlName="filePassword"
+            name="password"
+          />
+          <button
+            type="button"
+            bitSuffix
+            bitIconButton
+            bitPasswordInputToggle
+            [(toggled)]="showFilePassword"
+          ></button>
+          <bit-hint>{{ "exportPasswordDescription" | i18n }}</bit-hint>
+        </bit-form-field>
+        <tools-password-strength [password]="filePassword" [showText]="true">
+        </tools-password-strength>
+      </div>
+      <bit-form-field>
+        <bit-label>{{ "confirmFilePassword" | i18n }}</bit-label>
+        <input
+          bitInput
+          type="password"
+          id="confirmFilePassword"
+          formControlName="confirmFilePassword"
+          name="confirmFilePassword"
+        />
+        <button
+          type="button"
+          bitSuffix
+          bitIconButton
+          bitPasswordInputToggle
+          [(toggled)]="showFilePassword"
+        ></button>
+      </bit-form-field>
+    </ng-container>
+  </ng-container>
 </form>

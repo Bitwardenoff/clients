@@ -31,6 +31,7 @@ import {
   BitSubmitDirective,
   ButtonModule,
   CalloutModule,
+  CheckboxModule,
   DialogService,
   FormFieldModule,
   IconButtonModule,
@@ -50,6 +51,7 @@ import { ExportScopeCalloutComponent } from "./export-scope-callout.component";
   standalone: true,
   imports: [
     CommonModule,
+    CheckboxModule,
     ReactiveFormsModule,
     JslibModule,
     FormFieldModule,
@@ -137,6 +139,7 @@ export class ExportComponent implements OnInit, OnDestroy, AfterViewInit {
       },
     ],
     format: ["json", Validators.required],
+    passwordProtected: [true],
     secret: [""],
     filePassword: ["", Validators.required],
     confirmFilePassword: ["", Validators.required],
@@ -185,6 +188,7 @@ export class ExportComponent implements OnInit, OnDestroy, AfterViewInit {
     merge(
       this.exportForm.get("format").valueChanges,
       this.exportForm.get("fileEncryptionType").valueChanges,
+      this.exportForm.get("passwordProtected").valueChanges,
     )
       .pipe(startWith(0), takeUntil(this.destroy$))
       .subscribe(() => this.adjustValidators());
@@ -200,6 +204,7 @@ export class ExportComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     } else {
       this.formatOptions.push({ name: ".zip (With Attachments)", value: "zip" });
+      this.exportForm.setValue({ format: "zip" });
     }
 
     this.organizations$ = combineLatest({
@@ -254,6 +259,10 @@ export class ExportComponent implements OnInit, OnDestroy, AfterViewInit {
       this.format === "encrypted_json" &&
       this.fileEncryptionType === EncryptedExportType.AccountEncrypted
     );
+  }
+
+  get zipPasswordProtected() {
+    return this.exportForm.get("passwordProtected").value;
   }
 
   protected async doExport() {
@@ -313,7 +322,7 @@ export class ExportComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private async verifyUser(): Promise<boolean> {
     let confirmDescription = "exportWarningDesc";
-    if (this.isFileEncryptedExport) {
+    if (this.isFileEncryptedExport || (this.format === "zip" && this.zipPasswordProtected)) {
       confirmDescription = "fileEncryptedExportWarningDesc";
     } else if (this.isAccountEncryptedExport) {
       confirmDescription = "encExportKeyWarningDesc";
@@ -405,12 +414,16 @@ export class ExportComponent implements OnInit, OnDestroy, AfterViewInit {
     this.exportForm.get("confirmFilePassword").reset();
     this.exportForm.get("filePassword").reset();
 
-    if (this.encryptedFormat && this.fileEncryptionType == EncryptedExportType.FileEncrypted) {
+    if (
+      (this.encryptedFormat && this.fileEncryptionType == EncryptedExportType.FileEncrypted) ||
+      (this.format === "zip" && this.zipPasswordProtected)
+    ) {
       this.exportForm.controls.filePassword.enable();
       this.exportForm.controls.confirmFilePassword.enable();
     } else {
       this.exportForm.controls.filePassword.disable();
       this.exportForm.controls.confirmFilePassword.disable();
+      this.exportForm.setValue({ filePassword: "", confirmFilePassword: "" });
     }
   }
 

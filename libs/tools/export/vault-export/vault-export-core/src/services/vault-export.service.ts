@@ -17,7 +17,7 @@ export class VaultExportService implements VaultExportServiceAbstraction {
         throw new Error("CSV does not support password protected export");
       }
 
-      return this.individualVaultExportService.getPasswordProtectedExport(password);
+      return this.individualVaultExportService.getPasswordProtectedExport(format, password);
     }
     return this.individualVaultExportService.getExport(format);
   }
