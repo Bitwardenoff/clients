@@ -47,7 +47,7 @@ import { MessagingService } from "@bitwarden/common/platform/abstractions/messag
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { SyncService } from "@bitwarden/common/platform/sync";
-import { OrganizationId } from "@bitwarden/common/types/guid";
+import { OrganizationId, UserId } from "@bitwarden/common/types/guid";
 import { CipherService } from "@bitwarden/common/vault/abstractions/cipher.service";
 import { CollectionService } from "@bitwarden/common/vault/abstractions/collection.service";
 import { TotpService } from "@bitwarden/common/vault/abstractions/totp.service";
@@ -167,6 +167,7 @@ export class VaultComponent implements OnInit, OnDestroy {
   protected vaultBulkManagementActionEnabled$ = this.configService.getFeatureFlag$(
     FeatureFlag.VaultBulkManagementAction,
   );
+  private activeUserId: UserId;
   private searchText$ = new Subject<string>();
   private refresh$ = new BehaviorSubject<void>(null);
   private destroy$ = new Subject<void>();
@@ -207,6 +208,10 @@ export class VaultComponent implements OnInit, OnDestroy {
       this.platformUtilsService.isSelfHost()
         ? "trashCleanupWarningSelfHosted"
         : "trashCleanupWarning",
+    );
+
+    this.activeUserId = await firstValueFrom(
+      this.accountService.activeAccount$.pipe(map((a) => a?.id)),
     );
 
     const firstSetup$ = this.route.queryParams.pipe(
@@ -470,6 +475,12 @@ export class VaultComponent implements OnInit, OnDestroy {
         case "assignToCollections":
           await this.bulkAssignToCollections(event.items);
           break;
+        case "toggleFavorite":
+          await this.handleFavoriteEvent(event.item);
+          break;
+        case "editCipher":
+          await this.editCipher(event.item);
+          break;
       }
     } finally {
       this.processingEvent = false;
@@ -701,12 +712,9 @@ export class VaultComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const activeUserId = await firstValueFrom(
-      this.accountService.activeAccount$.pipe(map((a) => a?.id)),
-    );
     // Decrypt the cipher.
     const cipherView = await cipher.decrypt(
-      await this.cipherService.getKeyForCipherKeyDecryption(cipher, activeUserId),
+      await this.cipherService.getKeyForCipherKeyDecryption(cipher, this.activeUserId),
     );
 
     // Open the dialog.
@@ -1137,6 +1145,24 @@ export class VaultComponent implements OnInit, OnDestroy {
     if (result === BulkShareDialogResult.Shared) {
       this.refresh();
     }
+  }
+
+  /**
+   * Toggles the favorite status of the cipher and updates it on the server.
+   */
+  async handleFavoriteEvent(cipher: CipherView) {
+    const encryptedCipher = await this.cipherService.encrypt(cipher, this.activeUserId);
+    await this.cipherService.updateWithServer(encryptedCipher);
+
+    this.toastService.showToast({
+      variant: "success",
+      title: null,
+      message: this.i18nService.t(
+        cipher.favorite ? "itemAddedToFavorites" : "itemRemovedFromFavorites",
+      ),
+    });
+
+    this.refresh();
   }
 
   protected deleteCipherWithServer(id: string, permanent: boolean) {
