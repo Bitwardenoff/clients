@@ -62,6 +62,7 @@ import { ServiceUtils } from "@bitwarden/common/vault/service-utils";
 import { DialogService, Icons, ToastService } from "@bitwarden/components";
 import { CollectionAssignmentResult, PasswordRepromptService } from "@bitwarden/vault";
 
+import { RouterService } from "../../core";
 import { SharedModule } from "../../shared/shared.module";
 import { AssignCollectionsWebComponent } from "../components/assign-collections";
 import {
@@ -200,6 +201,7 @@ export class VaultComponent implements OnInit, OnDestroy {
     private billingAccountProfileStateService: BillingAccountProfileStateService,
     private toastService: ToastService,
     private accountService: AccountService,
+    private routerService: RouterService,
   ) {}
 
   async ngOnInit() {
@@ -1165,6 +1167,10 @@ export class VaultComponent implements OnInit, OnDestroy {
   }
 
   private go(queryParams: any = null) {
+    if (!this.router.isActive("/vault", false)) {
+      return;
+    }
+
     if (queryParams == null) {
       queryParams = {
         favorites: this.activeFilter.isFavorites || null,
