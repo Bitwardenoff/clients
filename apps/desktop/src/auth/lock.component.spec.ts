@@ -36,7 +36,7 @@ import { UserId } from "@bitwarden/common/types/guid";
 import { SyncService } from "@bitwarden/common/vault/abstractions/sync/sync.service.abstraction";
 import { DialogService, ToastService } from "@bitwarden/components";
 
-import { BiometricsService } from "../key-management/biometrics/biometrics.service";
+import { MainBiometricsService } from "../key-management/biometrics/main-biometrics.service";
 
 import { LockComponent } from "./lock.component";
 
@@ -58,7 +58,7 @@ describe("LockComponent", () => {
   let fixture: ComponentFixture<LockComponent>;
   let stateServiceMock: MockProxy<StateService>;
   let biometricStateService: MockProxy<BiometricStateService>;
-  let biometricsService: MockProxy<BiometricsService>;
+  let biometricsService: MockProxy<MainBiometricsService>;
   let messagingServiceMock: MockProxy<MessagingService>;
   let broadcasterServiceMock: MockProxy<BroadcasterService>;
   let platformUtilsServiceMock: MockProxy<PlatformUtilsService>;
@@ -229,40 +229,24 @@ describe("LockComponent", () => {
       expect(component["autoPromptBiometric"]).toBe(false);
     });
 
-    it('should set "biometricReady" to true if "stateService.getBiometricReady()" resolves to true', async () => {
-      component["canUseBiometric"] = jest.fn().mockResolvedValue(true);
+    // it('should set "biometricReady" to true if "stateService.getBiometricReady()" resolves to true', async () => {
+    //   component["canUseBiometric"] = jest.fn().mockResolvedValue(true);
 
-      await component.ngOnInit();
-      expect(component["biometricReady"]).toBe(true);
-    });
+    //   await component.ngOnInit();
+    //   expect(component["biometricReady"]).toBe(true);
+    // });
 
-    it('should set "biometricReady" to false if "stateService.getBiometricReady()" resolves to false', async () => {
-      component["canUseBiometric"] = jest.fn().mockResolvedValue(false);
+    // it('should set "biometricReady" to false if "stateService.getBiometricReady()" resolves to false', async () => {
+    //   component["canUseBiometric"] = jest.fn().mockResolvedValue(false);
 
-      await component.ngOnInit();
-      expect(component["biometricReady"]).toBe(false);
-    });
+    //   await component.ngOnInit();
+    //   expect(component["biometricReady"]).toBe(false);
+    // });
 
     it("should call displayBiometricUpdateWarning", async () => {
       component["displayBiometricUpdateWarning"] = jest.fn();
       await component.ngOnInit();
       expect(component["displayBiometricUpdateWarning"]).toHaveBeenCalledTimes(1);
-    });
-
-    it("should call delayedAskForBiometric", async () => {
-      component["delayedAskForBiometric"] = jest.fn();
-      await component.ngOnInit();
-      expect(component["delayedAskForBiometric"]).toHaveBeenCalledTimes(1);
-      expect(component["delayedAskForBiometric"]).toHaveBeenCalledWith(500);
-    });
-
-    it("should call delayedAskForBiometric when queryParams change", async () => {
-      activatedRouteMock.queryParams = of({ promptBiometric: true });
-      component["delayedAskForBiometric"] = jest.fn();
-      await component.ngOnInit();
-
-      expect(component["delayedAskForBiometric"]).toHaveBeenCalledTimes(1);
-      expect(component["delayedAskForBiometric"]).toHaveBeenCalledWith(500);
     });
 
     it("should call messagingService.send", async () => {
@@ -359,7 +343,6 @@ describe("LockComponent", () => {
 
   describe("delayedAskForBiometric", () => {
     beforeEach(() => {
-      component["supportsBiometric"] = true;
       component["autoPromptBiometric"] = true;
     });
 
@@ -400,15 +383,6 @@ describe("LockComponent", () => {
       component["delayedAskForBiometric"](5000);
       tick(5000);
       expect(component["biometricAsked"]).toBe(true);
-    }));
-
-    it('should return; if "supportsBiometric" is false', fakeAsync(async () => {
-      component["supportsBiometric"] = false;
-      // FIXME: Verify that this floating promise is intentional. If it is, add an explanatory comment and ensure there is proper error handling.
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      component["delayedAskForBiometric"](5000);
-      tick(5000);
-      expect(component["biometricAsked"]).toBe(false);
     }));
 
     it('should return; if "autoPromptBiometric" is false', fakeAsync(async () => {
@@ -456,15 +430,6 @@ describe("LockComponent", () => {
 
       expect(component["unlockBiometric"]).toHaveBeenCalledTimes(0);
     }));
-  });
-
-  describe("canUseBiometric", () => {
-    it("should call getUserId() on stateService", async () => {
-      stateServiceMock.getUserId.mockResolvedValue("userId");
-      await component["canUseBiometric"]();
-
-      expect(ipc.keyManagement.biometric.enabled).toHaveBeenCalledWith("userId");
-    });
   });
 
   it('onWindowHidden() should set "showPassword" to false', () => {

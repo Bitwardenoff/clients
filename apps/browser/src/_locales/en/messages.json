@@ -316,7 +316,7 @@
   "createFoldersToOrganize": {
     "message": "Create folders to organize your vault items"
   },
-  "deleteFolderPermanently":{
+  "deleteFolderPermanently": {
     "message": "Are you sure you want to permanently delete this folder?"
   },
   "deleteFolder": {
@@ -1909,7 +1909,7 @@
     "message": "Use this password"
   },
   "useThisUsername": {
-      "message": "Use this username"
+    "message": "Use this username"
   },
   "securePasswordGenerated": {
     "message": "Secure password generated! Don't forget to also update your password on the website."
@@ -3252,7 +3252,7 @@
     "message": "Unlock your account, opens in a new window",
     "description": "Screen reader text (aria-label) for unlock account button in overlay"
   },
-  "fillCredentialsFor":  {
+  "fillCredentialsFor": {
     "message": "Fill credentials for",
     "description": "Screen reader text for when overlay item is in focused"
   },
@@ -4335,5 +4335,32 @@
   },
   "noEditPermissions": {
     "message": "You don't have permission to edit this item"
+  },
+  "biometricsStatusHelptextUnlockNeeded": {
+    "message": "Biometric unlock is unavailable because PIN or password unlock is required first."
+  },
+  "biometricsStatusHelptextHardwareUnavailable": {
+    "message": "Biometric unlock is currently unavailable."
+  },
+  "biometricsStatusHelptextAutoSetupNeeded": {
+    "message": "Biometric unlock is unavailable due to misconfigured system files."
+  },
+  "biometricsStatusHelptextManualSetupNeeded": {
+    "message": "Biometric unlock is unavailable due to misconfigured system files."
+  },
+  "biometricsStatusHelptextDesktopDisconnected": {
+    "message": "Biometric unlock is unavailable because the Bitwarden desktop app is closed."
+  },
+  "biometricsStatusHelptextNotEnabledInDesktop": {
+    "message": "Biometric unlock is unavailable because it is not enabled for $EMAIL$ in the Bitwarden desktop app.",
+    "placeholders": {
+      "email": {
+        "content": "$1",
+        "example": "mail@example.com"
+      }
+    }
+  },
+  "biometricsStatusHelptextUnavailableReasonUnknown": {
+    "message": "Biometric unlock is currently unavailable for an unknown reason."
   }
 }

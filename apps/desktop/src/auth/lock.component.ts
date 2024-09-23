@@ -1,6 +1,6 @@
 import { Component, NgZone, OnDestroy, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
-import { firstValueFrom, switchMap } from "rxjs";
+import { concatMap, delay, filter, firstValueFrom, takeUntil, throttleTime, timer } from "rxjs";
 
 import { LockComponent as BaseLockComponent } from "@bitwarden/angular/auth/components/lock.component";
 import { PinServiceAbstraction } from "@bitwarden/auth/common";
@@ -18,6 +18,7 @@ import { UserVerificationService } from "@bitwarden/common/auth/abstractions/use
 import { DeviceType } from "@bitwarden/common/enums";
 import { BiometricStateService } from "@bitwarden/common/key-management/biometrics/biometric-state.service";
 import { BiometricsService } from "@bitwarden/common/key-management/biometrics/biometric.service";
+import { BiometricsStatus } from "@bitwarden/common/key-management/biometrics/biometrics-status";
 import { BroadcasterService } from "@bitwarden/common/platform/abstractions/broadcaster.service";
 import { CryptoService } from "@bitwarden/common/platform/abstractions/crypto.service";
 import { EnvironmentService } from "@bitwarden/common/platform/abstractions/environment.service";
@@ -38,10 +39,8 @@ const BroadcasterSubscriptionId = "LockComponent";
 })
 export class LockComponent extends BaseLockComponent implements OnInit, OnDestroy {
   private deferFocus: boolean = null;
-  protected biometricReady = false;
   private biometricAsked = false;
   private autoPromptBiometric = false;
-  private timerId: any;
 
   constructor(
     masterPasswordService: InternalMasterPasswordServiceAbstraction,
@@ -110,14 +109,24 @@ export class LockComponent extends BaseLockComponent implements OnInit, OnDestro
     this.autoPromptBiometric = await firstValueFrom(
       this.biometricStateService.promptAutomatically$,
     );
-    this.biometricReady = await this.canUseBiometric();
+
+    timer(0, 100)
+      .pipe(
+        concatMap(async () => {
+          return await this.biometricsService.getShouldAutopromptNow();
+        }),
+        filter((shouldPrompt) => shouldPrompt),
+        delay(250),
+        throttleTime(5000),
+        concatMap(async () => {
+          await this.biometricsService.setShouldAutopromptNow(false);
+          await this.delayedAskForBiometric(0);
+        }),
+        takeUntil(this.destroy$),
+      )
+      .subscribe();
 
     await this.displayBiometricUpdateWarning();
-
-    // FIXME: Verify that this floating promise is intentional. If it is, add an explanatory comment and ensure there is proper error handling.
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.delayedAskForBiometric(500);
-    this.route.queryParams.pipe(switchMap((params) => this.delayedAskForBiometric(500, params)));
 
     this.broadcasterService.subscribe(BroadcasterSubscriptionId, async (message: any) => {
       this.ngZone.run(() => {
@@ -141,18 +150,11 @@ export class LockComponent extends BaseLockComponent implements OnInit, OnDestro
       });
     });
     this.messagingService.send("getWindowIsFocused");
-
-    // start background listener until destroyed on interval
-    this.timerId = setInterval(async () => {
-      this.supportsBiometric = await this.biometricsService.supportsBiometric();
-      this.biometricReady = await this.canUseBiometric();
-    }, 1000);
   }
 
   ngOnDestroy() {
     super.ngOnDestroy();
     this.broadcasterService.unsubscribe(BroadcasterSubscriptionId);
-    clearInterval(this.timerId);
   }
 
   onWindowHidden() {
@@ -166,7 +168,7 @@ export class LockComponent extends BaseLockComponent implements OnInit, OnDestro
       return;
     }
 
-    if (!this.supportsBiometric || !this.autoPromptBiometric || this.biometricAsked) {
+    if (!this.autoPromptBiometric || this.biometricAsked) {
       return;
     }
 
@@ -182,9 +184,8 @@ export class LockComponent extends BaseLockComponent implements OnInit, OnDestro
     }
   }
 
-  private async canUseBiometric() {
-    const userId = await this.stateService.getUserId();
-    return await ipc.keyManagement.biometric.enabled(userId);
+  get canUseBiometric() {
+    return this.biometricStatus == BiometricsStatus.Available;
   }
 
   private focusInput() {
@@ -211,7 +212,6 @@ export class LockComponent extends BaseLockComponent implements OnInit, OnDestro
       if (response) {
         await this.biometricStateService.setPromptAutomatically(false);
       }
-      this.supportsBiometric = await this.canUseBiometric();
       await this.biometricStateService.setDismissedRequirePasswordOnStartCallout();
     }
   }

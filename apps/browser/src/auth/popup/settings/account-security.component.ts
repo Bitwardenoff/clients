@@ -28,6 +28,7 @@ import { UserVerificationService } from "@bitwarden/common/auth/abstractions/use
 import { VaultTimeoutAction } from "@bitwarden/common/enums/vault-timeout-action.enum";
 import { BiometricStateService } from "@bitwarden/common/key-management/biometrics/biometric-state.service";
 import { BiometricsService } from "@bitwarden/common/key-management/biometrics/biometric.service";
+import { BiometricsStatus } from "@bitwarden/common/key-management/biometrics/biometrics-status";
 import { CryptoService } from "@bitwarden/common/platform/abstractions/crypto.service";
 import { EnvironmentService } from "@bitwarden/common/platform/abstractions/environment.service";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
@@ -168,7 +169,8 @@ export class AccountSecurityComponent implements OnInit, OnDestroy {
     };
     this.form.patchValue(initialValues, { emitEvent: false });
 
-    this.supportsBiometric = await this.biometricsService.supportsBiometric();
+    this.supportsBiometric =
+      (await this.biometricsService.getBiometricsStatus()) == BiometricsStatus.Available;
     this.showChangeMasterPass = await this.userVerificationService.hasMasterPassword();
 
     this.form.controls.vaultTimeout.valueChanges
@@ -408,7 +410,7 @@ export class AccountSecurityComponent implements OnInit, OnDestroy {
 
       const biometricsPromise = async () => {
         try {
-          const result = await this.biometricsService.authenticateBiometric();
+          const result = await this.biometricsService.authenticateWithBiometrics();
 
           // prevent duplicate dialog
           biometricsResponseReceived = true;
@@ -424,6 +426,7 @@ export class AccountSecurityComponent implements OnInit, OnDestroy {
               message: this.i18nService.t("errorEnableBiometricDesc"),
             });
           }
+          await this.biometricStateService.setBiometricUnlockEnabled(result);
         } catch (e) {
           // prevent duplicate dialog
           biometricsResponseReceived = true;

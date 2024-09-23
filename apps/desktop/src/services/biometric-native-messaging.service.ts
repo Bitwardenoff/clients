@@ -6,11 +6,12 @@ import { AuthService } from "@bitwarden/common/auth/abstractions/auth.service";
 import { AuthenticationStatus } from "@bitwarden/common/auth/enums/authentication-status";
 import { BiometricStateService } from "@bitwarden/common/key-management/biometrics/biometric-state.service";
 import { BiometricsService } from "@bitwarden/common/key-management/biometrics/biometric.service";
+import { BiometricsCommands } from "@bitwarden/common/key-management/biometrics/biometrics-commands";
+import { BiometricsStatus } from "@bitwarden/common/key-management/biometrics/biometrics-status";
 import { CryptoFunctionService } from "@bitwarden/common/platform/abstractions/crypto-function.service";
 import { CryptoService } from "@bitwarden/common/platform/abstractions/crypto.service";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { MessagingService } from "@bitwarden/common/platform/abstractions/messaging.service";
-import { KeySuffixOptions } from "@bitwarden/common/platform/enums";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { EncString } from "@bitwarden/common/platform/models/domain/enc-string";
 import { SymmetricCryptoKey } from "@bitwarden/common/platform/models/domain/symmetric-crypto-key";
@@ -52,6 +53,9 @@ export class BiometricMessageHandlerService {
       const accounts = await firstValueFrom(this.accountService.accounts$);
       const userIds = Object.keys(accounts);
       if (!userIds.includes(rawMessage.userId)) {
+        this.logService.info(
+          "[Native Messaging IPC] Received message for user that is not logged into the desktop app.",
+        );
         ipc.platform.nativeMessaging.sendMessage({
           command: "wrongUserId",
           appId: appId,
@@ -60,6 +64,7 @@ export class BiometricMessageHandlerService {
       }
 
       if (await firstValueFrom(this.desktopSettingService.browserIntegrationFingerprintEnabled$)) {
+        this.logService.info("[Native Messaging IPC] Requesting fingerprint verification.");
         ipc.platform.nativeMessaging.sendMessage({
           command: "verifyFingerprint",
           appId: appId,
@@ -79,6 +84,7 @@ export class BiometricMessageHandlerService {
         const browserSyncVerified = await firstValueFrom(dialogRef.closed);
 
         if (browserSyncVerified !== true) {
+          this.logService.info("[Native Messaging IPC] Fingerprint verification failed.");
           return;
         }
       }
@@ -88,6 +94,9 @@ export class BiometricMessageHandlerService {
     }
 
     if ((await ipc.platform.ephemeralStore.getEphemeralValue(appId)) == null) {
+      this.logService.info(
+        "[Native Messaging IPC] Epheremal secret for secure channel is missing. Invalidating encryption...",
+      );
       ipc.platform.nativeMessaging.sendMessage({
         command: "invalidateEncryption",
         appId: appId,
@@ -104,6 +113,9 @@ export class BiometricMessageHandlerService {
 
     // Shared secret is invalidated, force re-authentication
     if (message == null) {
+      this.logService.info(
+        "[Native Messaging IPC] Secure channel failed to decrypt message. Invalidating encryption...",
+      );
       ipc.platform.nativeMessaging.sendMessage({
         command: "invalidateEncryption",
         appId: appId,
@@ -112,20 +124,129 @@ export class BiometricMessageHandlerService {
     }
 
     if (Math.abs(message.timestamp - Date.now()) > MessageValidTimeout) {
-      this.logService.error("NativeMessage is to old, ignoring.");
+      this.logService.info("[Native Messaging IPC] Received a too old message. Ignoring.");
       return;
     }
 
+    const messageId = message.messageId;
+
     switch (message.command) {
-      case "biometricUnlock": {
+      case BiometricsCommands.UnlockWithBiometricsForUser: {
+        const userId = message.userId as UserId;
+        try {
+          const userKey = await this.biometricsService.unlockWithBiometricsForUser(userId);
+          if (userKey != null) {
+            this.logService.info("[Native Messaging IPC] Biometric unlock for user: " + userId);
+            await this.send(
+              {
+                command: BiometricsCommands.UnlockWithBiometricsForUser,
+                response: true,
+                messageId,
+                userKeyB64: userKey.keyB64,
+              },
+              appId,
+            );
+
+            const currentlyActiveAccountId = (
+              await firstValueFrom(this.accountService.activeAccount$)
+            ).id;
+            const isCurrentlyActiveAccountUnlocked =
+              (await firstValueFrom(this.authService.authStatusFor$(userId))) ==
+              AuthenticationStatus.Unlocked;
+
+            // prevent proc reloading an active account, when it is the same as the browser
+            if (currentlyActiveAccountId != message.userId || !isCurrentlyActiveAccountUnlocked) {
+              if (!ipc.platform.isDev) {
+                ipc.platform.reloadProcess();
+              }
+            }
+          } else {
+            await this.send(
+              {
+                command: BiometricsCommands.UnlockWithBiometricsForUser,
+                messageId,
+                response: false,
+              },
+              appId,
+            );
+          }
+        } catch (e) {
+          await this.send(
+            { command: BiometricsCommands.UnlockWithBiometricsForUser, messageId, response: false },
+            appId,
+          );
+        }
+
+        break;
+      }
+      case BiometricsCommands.AuthenticateWithBiometrics: {
+        try {
+          const unlocked = await this.biometricsService.authenticateWithBiometrics();
+          await this.send(
+            {
+              command: BiometricsCommands.AuthenticateWithBiometrics,
+              messageId,
+              response: unlocked,
+            },
+            appId,
+          );
+        } catch (e) {
+          await this.send(
+            { command: BiometricsCommands.AuthenticateWithBiometrics, messageId, response: false },
+            appId,
+          );
+        }
+        break;
+      }
+      case BiometricsCommands.GetBiometricsStatus: {
+        const status = await this.biometricsService.getBiometricsStatus();
+        return this.send(
+          {
+            command: BiometricsCommands.GetBiometricsStatus,
+            messageId,
+            response: status,
+          },
+          appId,
+        );
+      }
+      case BiometricsCommands.GetBiometricsStatusForUser: {
+        let status = await this.biometricsService.getBiometricsStatusForUser(
+          message.userId as UserId,
+        );
+        if (status == BiometricsStatus.NotEnabledLocally) {
+          status = BiometricsStatus.NotEnabledInConnectedDesktopApp;
+        }
+        return this.send(
+          {
+            command: BiometricsCommands.GetBiometricsStatusForUser,
+            messageId,
+            response: status,
+          },
+          appId,
+        );
+      }
+      // TODO: legacy, remove after 2025.01
+      case BiometricsCommands.IsAvailable: {
+        const available =
+          (await this.biometricsService.getBiometricsStatus()) == BiometricsStatus.Available;
+        return this.send(
+          {
+            command: BiometricsCommands.IsAvailable,
+            response: available ? "available" : "not available",
+          },
+          appId,
+        );
+      }
+      // TODO: legacy, remove after 2025.01
+      case BiometricsCommands.Unlock: {
         const isTemporarilyDisabled =
           (await this.biometricStateService.getBiometricUnlockEnabled(message.userId as UserId)) &&
-          !(await this.biometricsService.supportsBiometric());
+          !((await this.biometricsService.getBiometricsStatus()) == BiometricsStatus.Available);
         if (isTemporarilyDisabled) {
           return this.send({ command: "biometricUnlock", response: "not available" }, appId);
         }
 
-        if (!(await this.biometricsService.supportsBiometric())) {
+        if (!((await this.biometricsService.getBiometricsStatus()) == BiometricsStatus.Available)) {
           return this.send({ command: "biometricUnlock", response: "not supported" }, appId);
         }
 
@@ -156,10 +277,7 @@ export class BiometricMessageHandlerService {
         }
 
         try {
-          const userKey = await this.cryptoService.getUserKeyFromStorage(
-            KeySuffixOptions.Biometric,
-            message.userId,
-          );
+          const userKey = await this.biometricsService.unlockWithBiometricsForUser(userId);
 
           if (userKey != null) {
             await this.send(
@@ -187,18 +305,7 @@ export class BiometricMessageHandlerService {
         } catch (e) {
           await this.send({ command: "biometricUnlock", response: "canceled" }, appId);
         }
-
         break;
-      }
-      case "biometricUnlockAvailable": {
-        const isAvailable = await this.biometricsService.supportsBiometric();
-        return this.send(
-          {
-            command: "biometricUnlockAvailable",
-            response: isAvailable ? "available" : "not available",
-          },
-          appId,
-        );
       }
       default:
         this.logService.error("NativeMessage, got unknown command: " + message.command);
@@ -214,7 +321,11 @@ export class BiometricMessageHandlerService {
       SymmetricCryptoKey.fromString(await ipc.platform.ephemeralStore.getEphemeralValue(appId)),
     );
 
-    ipc.platform.nativeMessaging.sendMessage({ appId: appId, message: encrypted });
+    ipc.platform.nativeMessaging.sendMessage({
+      appId: appId,
+      messageId: message.messageId,
+      message: encrypted,
+    });
   }
 
   private async secureCommunication(remotePublicKey: Uint8Array, appId: string) {
@@ -224,6 +335,7 @@ export class BiometricMessageHandlerService {
       new SymmetricCryptoKey(secret).keyB64,
     );
 
+    this.logService.info("[Native Messaging IPC] Setting up secure channel");
     const encryptedSecret = await this.cryptoFunctionService.rsaEncrypt(
       secret,
       remotePublicKey,
@@ -232,6 +344,7 @@ export class BiometricMessageHandlerService {
     ipc.platform.nativeMessaging.sendMessage({
       appId: appId,
       command: "setupEncryption",
+      messageId: -1, // to indicate to the other side that this is a new desktop client. refactor later to use proper versioning
       sharedSecret: Utils.fromBufferToB64(encryptedSecret),
     });
   }

@@ -6,12 +6,12 @@ import { biometrics, passwords } from "@bitwarden/desktop-napi";
 
 import { WindowMain } from "../../main/window.main";
 
-import { OsBiometricService } from "./desktop.biometrics.service";
+import { OsBiometricService } from "./os-biometrics.service";
 
 const KEY_WITNESS_SUFFIX = "_witness";
 const WITNESS_VALUE = "known key";
 
-export default class BiometricWindowsMain implements OsBiometricService {
+export default class OsBiometricsServiceWindows implements OsBiometricService {
   // Use set helper method instead of direct access
   private _iv: string | null = null;
   // Use getKeyMaterial helper instead of direct access

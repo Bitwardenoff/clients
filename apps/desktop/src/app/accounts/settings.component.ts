@@ -14,14 +14,14 @@ import { DomainSettingsService } from "@bitwarden/common/autofill/services/domai
 import { DeviceType } from "@bitwarden/common/enums";
 import { VaultTimeoutAction } from "@bitwarden/common/enums/vault-timeout-action.enum";
 import { BiometricStateService } from "@bitwarden/common/key-management/biometrics/biometric-state.service";
-import { BiometricsService } from "@bitwarden/common/key-management/biometrics/biometric.service";
+import { BiometricsStatus } from "@bitwarden/common/key-management/biometrics/biometrics-status";
 import { CryptoService } from "@bitwarden/common/platform/abstractions/crypto.service";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { MessagingService } from "@bitwarden/common/platform/abstractions/messaging.service";
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
 import { StateService } from "@bitwarden/common/platform/abstractions/state.service";
-import { KeySuffixOptions, ThemeType } from "@bitwarden/common/platform/enums";
+import { ThemeType } from "@bitwarden/common/platform/enums/theme-type.enum";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { ThemeStateService } from "@bitwarden/common/platform/theming/theme-state.service";
 import { UserId } from "@bitwarden/common/types/guid";
@@ -34,6 +34,7 @@ import { DialogService } from "@bitwarden/components";
 
 import { SetPinComponent } from "../../auth/components/set-pin.component";
 import { DesktopAutofillSettingsService } from "../../autofill/services/desktop-autofill-settings.service";
+import { DesktopBiometricsService } from "../../key-management/biometrics/desktop.biometrics.service";
 import { DesktopSettingsService } from "../../platform/services/desktop-settings.service";
 import { NativeMessagingManifestService } from "../services/native-messaging-manifest.service";
 
@@ -52,6 +53,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   themeOptions: any[];
   clearClipboardOptions: any[];
   supportsBiometric: boolean;
+  private timerId: any;
   showAlwaysShowDock = false;
   requireEnableTray = false;
   showDuckDuckGoIntegrationOption = false;
@@ -134,7 +136,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     private userVerificationService: UserVerificationServiceAbstraction,
     private desktopSettingsService: DesktopSettingsService,
     private biometricStateService: BiometricStateService,
-    private biometricsService: BiometricsService,
+    private biometricsService: DesktopBiometricsService,
     private desktopAutofillSettingsService: DesktopAutofillSettingsService,
     private pinService: PinServiceAbstraction,
     private logService: LogService,
@@ -289,7 +291,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
     // Non-form values
     this.showMinToTray = this.platformUtilsService.getDevice() !== DeviceType.LinuxDesktop;
     this.showAlwaysShowDock = this.platformUtilsService.getDevice() === DeviceType.MacOsDesktop;
-    this.supportsBiometric = await this.biometricsService.supportsBiometric();
+    this.supportsBiometric = true;
     this.previousVaultTimeout = this.form.value.vaultTimeout;
 
     this.refreshTimeoutSettings$
@@ -352,6 +354,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
           this.form.controls.enableBrowserIntegrationFingerprint.disable();
         }
       });
+
+    this.supportsBiometric =
+      (await this.biometricsService.getBiometricsStatus()) == BiometricsStatus.Available;
+    this.timerId = setInterval(async () => {
+      this.supportsBiometric =
+        (await this.biometricsService.getBiometricsStatus()) == BiometricsStatus.Available;
+    }, 1000);
   }
 
   async saveVaultTimeout(newValue: VaultTimeout) {
@@ -468,12 +477,12 @@ export class SettingsComponent implements OnInit, OnDestroy {
         return;
       }
 
-      const needsSetup = await this.biometricsService.biometricsNeedsSetup();
-      const supportsBiometricAutoSetup = await this.biometricsService.biometricsSupportsAutoSetup();
+      const needsSetup = false;
+      const supportsBiometricAutoSetup = false;
 
       if (needsSetup) {
         if (supportsBiometricAutoSetup) {
-          await this.biometricsService.biometricsSetup();
+          await this.biometricsService.setupBiometrics();
         } else {
           const confirmed = await this.dialogService.openSimpleDialog({
             title: { key: "biometricsManualSetupTitle" },
@@ -505,8 +514,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
       }
       await this.cryptoService.refreshAdditionalKeys();
 
+      const activeUserId = await firstValueFrom(
+        this.accountService.activeAccount$.pipe(map((a) => a?.id)),
+      );
       // Validate the key is stored in case biometrics fail.
-      const biometricSet = await this.cryptoService.hasUserKeyStored(KeySuffixOptions.Biometric);
+      const biometricSet =
+        (await this.biometricsService.getBiometricsStatusForUser(activeUserId)) ===
+        BiometricsStatus.Available;
       this.form.controls.biometric.setValue(biometricSet, { emitEvent: false });
       if (!biometricSet) {
         await this.biometricStateService.setBiometricUnlockEnabled(false);
@@ -757,6 +771,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+    clearInterval(this.timerId);
   }
 
   get biometricText() {
