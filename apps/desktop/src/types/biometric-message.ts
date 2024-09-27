@@ -4,8 +4,9 @@ export enum BiometricAction {
 
   UnlockForUser = "unlockForUser",
   GetStatusForUser = "statusForUser",
-  SetKeyForUser = "setKeyForUser",
-  RemoveKeyForUser = "removeKeyForUser",
+  EnableBiometricUnlockForUser = "enableBiometricUnlockFroUser",
+  DisableBiometricUnlockForUser = "disableBiometricUnlockForUser",
+  ProvideBiometricUnlockKeyForUser = "provideBiometricUnlockKey",
 
   SetClientKeyHalf = "setClientKeyHalf",
 

@@ -31,13 +31,18 @@ export class MainBiometricsIPCListener {
             );
           case BiometricAction.GetStatusForUser:
             return await this.biometricService.getBiometricsStatusForUser(message.userId as UserId);
-          case BiometricAction.SetKeyForUser:
-            return await this.biometricService.setBiometricProtectedUnlockKeyForUser(
+          case BiometricAction.ProvideBiometricUnlockKeyForUser:
+            return await this.biometricService.provideBiometricProtectedUnlockKeyForUser(
               message.userId as UserId,
               message.key,
             );
-          case BiometricAction.RemoveKeyForUser:
-            return await this.biometricService.deleteBiometricUnlockKeyForUser(
+          case BiometricAction.EnableBiometricUnlockForUser:
+            return await this.biometricService.enableBiomtricUnlockForUser(
+              message.userId as UserId,
+              message.key,
+            );
+          case BiometricAction.DisableBiometricUnlockForUser:
+            return await this.biometricService.disableBiometricUnlockForUser(
               message.userId as UserId,
             );
           case BiometricAction.SetClientKeyHalf:

@@ -83,7 +83,7 @@ export class ElectronCryptoService extends CryptoService {
     // TODO: Move to windows implementation
     const clientEncKeyHalf = await this.getBiometricEncryptionClientKeyHalf(userKey, userId);
     await this.biometricService.setClientKeyHalfForUser(userId, clientEncKeyHalf);
-    await this.biometricService.setBiometricProtectedUnlockKeyForUser(userId, userKey.keyB64);
+    await this.biometricService.provideBiometricProtectedUnlockKeyForUser(userId, userKey.keyB64);
   }
 
   protected async shouldStoreKey(keySuffix: KeySuffixOptions, userId?: UserId): Promise<boolean> {
@@ -91,7 +91,7 @@ export class ElectronCryptoService extends CryptoService {
   }
 
   protected override async clearAllStoredUserKeys(userId?: UserId): Promise<void> {
-    await this.biometricService.deleteBiometricUnlockKeyForUser(userId);
+    await this.biometricService.disableBiometricUnlockForUser(userId);
     await super.clearAllStoredUserKeys(userId);
   }
 

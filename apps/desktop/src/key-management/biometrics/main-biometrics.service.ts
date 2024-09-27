@@ -60,9 +60,9 @@ export class MainBiometricsService extends DesktopBiometricsService {
    * @returns the status of the biometrics of the platform
    */
   async getBiometricsStatus(): Promise<BiometricsStatus> {
-    if (!(await this.osBiometricsService.osSupportsBiometric())) {
-      if (await this.osBiometricsService.osBiometricsNeedsSetup()) {
-        if (await this.osBiometricsService.osBiometricsCanAutoSetup()) {
+    if (!(await this.osBiometricsService.isBiometricsAvailable())) {
+      if (await this.osBiometricsService.needsSetup()) {
+        if (await this.osBiometricsService.canAutoSetup()) {
           return BiometricsStatus.AutoSetupNeeded;
         } else {
           return BiometricsStatus.ManualSetupNeeded;
@@ -106,7 +106,7 @@ export class MainBiometricsService extends DesktopBiometricsService {
   }
 
   async setupBiometrics(): Promise<void> {
-    return await this.osBiometricsService.osBiometricsSetup();
+    return await this.osBiometricsService.setupBiometrics();
   }
 
   async setClientKeyHalfForUser(userId: UserId, value: string): Promise<void> {
@@ -119,34 +119,35 @@ export class MainBiometricsService extends DesktopBiometricsService {
 
   async unlockWithBiometricsForUser(userId: UserId): Promise<UserKey | null> {
     return SymmetricCryptoKey.fromString(
-      await this.osBiometricsService.getBiometricKey(
-        "Bitwarden_biometric",
-        `${userId}_user_biometric`,
-        this.clientKeyHalves.get(userId),
-      ),
+      await this.osBiometricsService.unlockWithBiometrics(userId, this.clientKeyHalves.get(userId)),
     ) as UserKey;
   }
 
-  async setBiometricProtectedUnlockKeyForUser(userId: UserId, value: string): Promise<void> {
-    const service = "Bitwarden_biometric";
-    const storageKey = `${userId}_user_biometric`;
+  async provideBiometricProtectedUnlockKeyForUser(
+    userId: UserId,
+    unlockKey: string,
+  ): Promise<void> {
     if (!this.clientKeyHalves.has(userId)) {
       throw new Error("No client key half provided for user");
     }
 
-    return await this.osBiometricsService.setBiometricKey(
-      service,
-      storageKey,
-      value,
+    return await this.osBiometricsService.provideUnlockKey(userId, unlockKey);
+  }
+
+  async enableBiomtricUnlockForUser(userId: UserId, unlockKey: string): Promise<boolean> {
+    if (!this.clientKeyHalves.has(userId)) {
+      throw new Error("No client key half provided for user");
+    }
+
+    return await this.osBiometricsService.enableBiometricUnlock(
+      userId,
+      unlockKey,
       this.clientKeyHalves.get(userId),
     );
   }
 
-  async deleteBiometricUnlockKeyForUser(userId: UserId): Promise<void> {
-    return await this.osBiometricsService.deleteBiometricKey(
-      "Bitwarden_biometric",
-      `${userId}_user_biometric`,
-    );
+  async disableBiometricUnlockForUser(userId: UserId): Promise<void> {
+    return await this.osBiometricsService.disableBiometricUnlock(userId);
   }
 
   /**

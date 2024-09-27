@@ -23,6 +23,7 @@ import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/pl
 import { StateService } from "@bitwarden/common/platform/abstractions/state.service";
 import { ThemeType } from "@bitwarden/common/platform/enums/theme-type.enum";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
+import { SymmetricCryptoKey } from "@bitwarden/common/platform/models/domain/symmetric-crypto-key";
 import { ThemeStateService } from "@bitwarden/common/platform/theming/theme-state.service";
 import { UserId } from "@bitwarden/common/types/guid";
 import {
@@ -473,6 +474,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
       if (!enabled || !this.supportsBiometric) {
         this.form.controls.biometric.setValue(false, { emitEvent: false });
         await this.biometricStateService.setBiometricUnlockEnabled(false);
+        const userId = (await firstValueFrom(this.accountService.activeAccount$)).id;
+        await this.biometricsService.disableBiometricUnlockForUser(userId);
         await this.cryptoService.refreshAdditionalKeys();
         return;
       }
@@ -512,15 +515,21 @@ export class SettingsComponent implements OnInit, OnDestroy {
         await this.biometricStateService.setRequirePasswordOnStart(true);
         await this.biometricStateService.setDismissedRequirePasswordOnStartCallout();
       }
-      await this.cryptoService.refreshAdditionalKeys();
-
       const activeUserId = await firstValueFrom(
         this.accountService.activeAccount$.pipe(map((a) => a?.id)),
       );
+      const userKey = await this.cryptoService.getUserKey();
+      const wasBiometricUnlockEnabled = await this.biometricsService.enableBiomtricUnlockForUser(
+        activeUserId,
+        (userKey as SymmetricCryptoKey).keyB64,
+      );
+      await this.cryptoService.refreshAdditionalKeys();
+
       // Validate the key is stored in case biometrics fail.
       const biometricSet =
+        wasBiometricUnlockEnabled &&
         (await this.biometricsService.getBiometricsStatusForUser(activeUserId)) ===
-        BiometricsStatus.Available;
+          BiometricsStatus.Available;
       this.form.controls.biometric.setValue(biometricSet, { emitEvent: false });
       if (!biometricSet) {
         await this.biometricStateService.setBiometricUnlockEnabled(false);

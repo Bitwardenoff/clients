@@ -24,15 +24,21 @@ const biometric = {
       action: BiometricAction.GetStatusForUser,
       userId: userId,
     } satisfies BiometricMessage),
-  setBiometricProtectedUnlockKeyForUser: (userId: string, value: string): Promise<void> =>
+  provideBiometricUnlockKeyForUser: (userId: string, value: string): Promise<void> =>
     ipcRenderer.invoke("biometric", {
-      action: BiometricAction.SetKeyForUser,
+      action: BiometricAction.ProvideBiometricUnlockKeyForUser,
       userId: userId,
       key: value,
     } satisfies BiometricMessage),
-  deleteBiometricUnlockKeyForUser: (userId: string): Promise<void> =>
+  enableBiometricUnlockForUser: (userId: string, value: string): Promise<boolean> =>
     ipcRenderer.invoke("biometric", {
-      action: BiometricAction.RemoveKeyForUser,
+      action: BiometricAction.EnableBiometricUnlockForUser,
+      userId: userId,
+      key: value,
+    } satisfies BiometricMessage),
+  disableBiometricUnlockForUser: (userId: string): Promise<void> =>
+    ipcRenderer.invoke("biometric", {
+      action: BiometricAction.DisableBiometricUnlockForUser,
       userId: userId,
     } satisfies BiometricMessage),
   setupBiometrics: (): Promise<void> =>

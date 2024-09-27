@@ -28,6 +28,9 @@ const polkitPolicy = `<?xml version="1.0" encoding="UTF-8"?>
 const policyFileName = "com.bitwarden.Bitwarden.policy";
 const policyPath = "/usr/share/polkit-1/actions/";
 
+const serviceName = "Bitwarden_biometric";
+const storageKeySuffix = `$_user_biometric`;
+
 export default class OsBiometricsServiceLinux implements OsBiometricService {
   constructor(
     private i18nservice: I18nService,
@@ -37,28 +40,34 @@ export default class OsBiometricsServiceLinux implements OsBiometricService {
   // Use getKeyMaterial helper instead of direct access
   private _osKeyHalf: string | null = null;
 
-  async setBiometricKey(
-    service: string,
-    key: string,
-    value: string,
+  async enableBiometricUnlock(
+    userId: string,
+    unlockKey: string,
     clientKeyPartB64: string | undefined,
-  ): Promise<void> {
+  ): Promise<boolean> {
+    const service = "Bitwarden_biometric";
+    const storageKey = `${userId}_user_biometric`;
     const storageDetails = await this.getStorageDetails({ clientKeyHalfB64: clientKeyPartB64 });
     await biometrics.setBiometricSecret(
       service,
-      key,
-      value,
+      storageKey,
+      unlockKey,
       storageDetails.key_material,
       storageDetails.ivB64,
     );
+
+    return true;
   }
-  async deleteBiometricKey(service: string, key: string): Promise<void> {
-    await passwords.deletePassword(service, key);
+  async disableBiometricUnlock(userId: string): Promise<void> {
+    const service = "Bitwarden_biometric";
+    const storageKey = `${userId}_user_biometric`;
+    await passwords.deletePassword(service, storageKey);
   }
 
-  async getBiometricKey(
-    service: string,
-    storageKey: string,
+  async provideUnlockKey(userId: string, unlockKey: string): Promise<void> {}
+
+  async unlockWithBiometrics(
+    userId: string,
     clientKeyPartB64: string | undefined,
   ): Promise<string | null> {
     const success = await this.authenticateBiometric();
@@ -67,7 +76,7 @@ export default class OsBiometricsServiceLinux implements OsBiometricService {
       throw new Error("Biometric authentication failed");
     }
 
-    const value = await passwords.getPassword(service, storageKey);
+    const value = await passwords.getPassword(serviceName, userId + storageKeySuffix);
 
     if (value == null || value == "") {
       return null;
@@ -76,8 +85,8 @@ export default class OsBiometricsServiceLinux implements OsBiometricService {
       this.setIv(encValue.iv);
       const storageDetails = await this.getStorageDetails({ clientKeyHalfB64: clientKeyPartB64 });
       const storedValue = await biometrics.getBiometricSecret(
-        service,
-        storageKey,
+        serviceName,
+        userId + storageKeySuffix,
         storageDetails.key_material,
       );
       return storedValue;
@@ -89,7 +98,7 @@ export default class OsBiometricsServiceLinux implements OsBiometricService {
     return await biometrics.prompt(hwnd, this.i18nservice.t("polkitConsentMessage"));
   }
 
-  async osSupportsBiometric(): Promise<boolean> {
+  async isBiometricsAvailable(): Promise<boolean> {
     // We assume all linux distros have some polkit implementation
     // that either has bitwarden set up or not, which is reflected in osBiomtricsNeedsSetup.
     // Snap does not have access at the moment to polkit
@@ -99,12 +108,12 @@ export default class OsBiometricsServiceLinux implements OsBiometricService {
     return (await passwords.isAvailable()) && !isSnapStore();
   }
 
-  async osBiometricsNeedsSetup(): Promise<boolean> {
+  async needsSetup(): Promise<boolean> {
     // check whether the polkit policy is loaded via dbus call to polkit
     return !(await biometrics.available());
   }
 
-  async osBiometricsCanAutoSetup(): Promise<boolean> {
+  async canAutoSetup(): Promise<boolean> {
     // We cannot auto setup on snap or flatpak since the filesystem is sandboxed.
     // The user needs to manually set up the polkit policy outside of the sandbox
     // since we allow access to polkit via dbus for the sandboxed clients, the authentication works from
@@ -112,7 +121,7 @@ export default class OsBiometricsServiceLinux implements OsBiometricService {
     return isLinux() && !isSnapStore() && !isFlatpak();
   }
 
-  async osBiometricsSetup(): Promise<void> {
+  async setupBiometrics(): Promise<void> {
     const process = spawn("pkexec", [
       "bash",
       "-c",

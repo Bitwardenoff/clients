@@ -10,6 +10,8 @@ import { OsBiometricService } from "./os-biometrics.service";
 
 const KEY_WITNESS_SUFFIX = "_witness";
 const WITNESS_VALUE = "known key";
+const serviceName = "Bitwarden_biometric";
+const storageKeySuffix = `$_user_biometric`;
 
 export default class OsBiometricsServiceWindows implements OsBiometricService {
   // Use set helper method instead of direct access
@@ -23,16 +25,12 @@ export default class OsBiometricsServiceWindows implements OsBiometricService {
     private logService: LogService,
   ) {}
 
-  async osSupportsBiometric(): Promise<boolean> {
+  async isBiometricsAvailable(): Promise<boolean> {
     return await biometrics.available();
   }
 
-  async getBiometricKey(
-    service: string,
-    storageKey: string,
-    clientKeyHalfB64: string,
-  ): Promise<string | null> {
-    const value = await passwords.getPassword(service, storageKey);
+  async unlockWithBiometrics(userId: string, clientKeyHalfB64: string): Promise<string | null> {
+    const value = await passwords.getPassword(serviceName, userId + storageKeySuffix);
 
     if (value == null || value == "") {
       return null;
@@ -43,8 +41,8 @@ export default class OsBiometricsServiceWindows implements OsBiometricService {
       });
 
       await biometrics.setBiometricSecret(
-        service,
-        storageKey,
+        serviceName,
+        userId + storageKeySuffix,
         value,
         storageDetails.key_material,
         storageDetails.ivB64,
@@ -56,26 +54,38 @@ export default class OsBiometricsServiceWindows implements OsBiometricService {
       const storageDetails = await this.getStorageDetails({
         clientKeyHalfB64,
       });
-      return await biometrics.getBiometricSecret(service, storageKey, storageDetails.key_material);
+      return await biometrics.getBiometricSecret(
+        serviceName,
+        userId + storageKeySuffix,
+        storageDetails.key_material,
+      );
     }
   }
 
-  async setBiometricKey(
-    service: string,
-    storageKey: string,
-    value: string,
+  async provideUnlockKey(userId: string, unlockKey: string): Promise<void> {}
+
+  async enableBiometricUnlock(
+    userId: string,
+    unlockKey: string,
     clientKeyPartB64: string | undefined,
-  ): Promise<void> {
-    const parsedValue = SymmetricCryptoKey.fromString(value);
-    if (await this.valueUpToDate({ value: parsedValue, clientKeyPartB64, service, storageKey })) {
+  ): Promise<boolean> {
+    const parsedValue = SymmetricCryptoKey.fromString(unlockKey);
+    if (
+      await this.valueUpToDate({
+        value: parsedValue,
+        clientKeyPartB64,
+        service: serviceName,
+        storageKey: userId + storageKeySuffix,
+      })
+    ) {
       return;
     }
 
     const storageDetails = await this.getStorageDetails({ clientKeyHalfB64: clientKeyPartB64 });
     const storedValue = await biometrics.setBiometricSecret(
-      service,
-      storageKey,
-      value,
+      serviceName,
+      userId + storageKeySuffix,
+      unlockKey,
       storageDetails.key_material,
       storageDetails.ivB64,
     );
@@ -83,15 +93,15 @@ export default class OsBiometricsServiceWindows implements OsBiometricService {
     await this.storeValueWitness(
       parsedValue,
       parsedStoredValue,
-      service,
-      storageKey,
+      serviceName,
+      userId + storageKeySuffix,
       clientKeyPartB64,
     );
   }
 
-  async deleteBiometricKey(service: string, key: string): Promise<void> {
-    await passwords.deletePassword(service, key);
-    await passwords.deletePassword(service, key + KEY_WITNESS_SUFFIX);
+  async disableBiometricUnlock(userId: string): Promise<void> {
+    await passwords.deletePassword(serviceName, storageKeySuffix);
+    await passwords.deletePassword(serviceName, userId + storageKeySuffix + KEY_WITNESS_SUFFIX);
   }
 
   async authenticateBiometric(): Promise<boolean> {
@@ -228,13 +238,13 @@ export default class OsBiometricsServiceWindows implements OsBiometricService {
     return result;
   }
 
-  async osBiometricsNeedsSetup() {
+  async needsSetup() {
     return false;
   }
 
-  async osBiometricsCanAutoSetup(): Promise<boolean> {
+  async canAutoSetup(): Promise<boolean> {
     return false;
   }
 
-  async osBiometricsSetup(): Promise<void> {}
+  async setupBiometrics(): Promise<void> {}
 }

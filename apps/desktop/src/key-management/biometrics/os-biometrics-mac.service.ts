@@ -5,12 +5,11 @@ import { passwords } from "@bitwarden/desktop-napi";
 
 import { OsBiometricService } from "./os-biometrics.service";
 
+const serviceName = "Bitwarden_biometric";
+const storageKeySuffix = `$_user_biometric`;
+
 export default class OsBiometricsServiceMac implements OsBiometricService {
   constructor(private i18nservice: I18nService) {}
-
-  async osSupportsBiometric(): Promise<boolean> {
-    return systemPreferences.canPromptTouchID();
-  }
 
   async authenticateBiometric(): Promise<boolean> {
     try {
@@ -21,26 +20,48 @@ export default class OsBiometricsServiceMac implements OsBiometricService {
     }
   }
 
-  async getBiometricKey(service: string, key: string): Promise<string | null> {
+  async isBiometricsAvailable(): Promise<boolean> {
+    return systemPreferences.canPromptTouchID();
+  }
+
+  async unlockWithBiometrics(userId: string, _clientkeyHalfB64: string): Promise<string | null> {
     const success = await this.authenticateBiometric();
 
     if (!success) {
-      throw new Error("Biometric authentication failed");
+      return null;
     }
 
-    return await passwords.getPassword(service, key);
+    return await passwords.getPassword(serviceName, userId + storageKeySuffix);
   }
 
-  async setBiometricKey(service: string, key: string, value: string): Promise<void> {
-    if (await this.valueUpToDate(service, key, value)) {
+  async enableBiometricUnlock(
+    userId: string,
+    unlockKey: string,
+    _clientkeyHalfB64: string,
+  ): Promise<boolean> {
+    if (await this.valueUpToDate(serviceName, userId + storageKeySuffix, unlockKey)) {
+      return true;
+    }
+
+    // require proving biometric access in order to write the key to the keychain
+    if (!(await this.authenticateBiometric())) {
+      return false;
+    }
+
+    await passwords.setPassword(serviceName, userId + storageKeySuffix, unlockKey);
+    return true;
+  }
+
+  async disableBiometricUnlock(userId: string): Promise<void> {
+    return await passwords.deletePassword(serviceName, userId + storageKeySuffix);
+  }
+
+  async provideUnlockKey(userId: string, unlockKey: string): Promise<void> {
+    if (await this.valueUpToDate(serviceName, userId + storageKeySuffix, unlockKey)) {
       return;
+    } else {
+      await passwords.setPassword(serviceName, userId + storageKeySuffix, unlockKey);
     }
-
-    return await passwords.setPassword(service, key, value);
-  }
-
-  async deleteBiometricKey(service: string, key: string): Promise<void> {
-    return await passwords.deletePassword(service, key);
   }
 
   private async valueUpToDate(service: string, key: string, value: string): Promise<boolean> {
@@ -52,13 +73,13 @@ export default class OsBiometricsServiceMac implements OsBiometricService {
     }
   }
 
-  async osBiometricsNeedsSetup() {
+  async needsSetup() {
     return false;
   }
 
-  async osBiometricsCanAutoSetup(): Promise<boolean> {
+  async canAutoSetup(): Promise<boolean> {
     return false;
   }
 
-  async osBiometricsSetup(): Promise<void> {}
+  async setupBiometrics(): Promise<void> {}
 }

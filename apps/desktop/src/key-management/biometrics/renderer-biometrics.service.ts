@@ -28,12 +28,16 @@ export class RendererBiometricsService extends DesktopBiometricsService {
     return await ipc.keyManagement.biometric.getBiometricsStatusForUser(id);
   }
 
-  async setBiometricProtectedUnlockKeyForUser(userId: UserId, value: string): Promise<void> {
-    return await ipc.keyManagement.biometric.setBiometricProtectedUnlockKeyForUser(userId, value);
+  async provideBiometricProtectedUnlockKeyForUser(userId: UserId, value: string): Promise<void> {
+    return await ipc.keyManagement.biometric.provideBiometricUnlockKeyForUser(userId, value);
   }
 
-  async deleteBiometricUnlockKeyForUser(userId: UserId): Promise<void> {
-    return await ipc.keyManagement.biometric.deleteBiometricUnlockKeyForUser(userId);
+  async enableBiomtricUnlockForUser(userId: UserId, unlockKey: string): Promise<boolean> {
+    return await ipc.keyManagement.biometric.enableBiometricUnlockForUser(userId, unlockKey);
+  }
+
+  async disableBiometricUnlockForUser(userId: UserId): Promise<void> {
+    return await ipc.keyManagement.biometric.disableBiometricUnlockForUser(userId);
   }
 
   async setupBiometrics(): Promise<void> {
