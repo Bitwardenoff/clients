@@ -25,9 +25,15 @@ on:
       - '!*.txt'
       - '.github/workflows/build-browser.yml'
   workflow_call:
-    inputs: {}
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
   workflow_dispatch:
-    inputs: {}
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
 
 defaults:
   run:
@@ -44,6 +50,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Get Package Version
         id: gen_vars
@@ -74,6 +82,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Testing locales - extName length
         run: |
@@ -112,6 +122,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Set up Node
         uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
@@ -178,6 +190,7 @@ jobs:
           name: dist-opera-${{ env._BUILD_NUMBER }}.zip
           path: browser-source/apps/browser/dist/dist-opera.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload Opera MV3 artifact (DO NOT USE FOR PROD)
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -185,6 +198,7 @@ jobs:
           name: DO-NOT-USE-FOR-PROD-dist-opera-MV3-${{ env._BUILD_NUMBER }}.zip
           path: browser-source/apps/browser/dist/dist-opera-mv3.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload Chrome MV3 artifact
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -192,6 +206,7 @@ jobs:
           name: dist-chrome-MV3-${{ env._BUILD_NUMBER }}.zip
           path: browser-source/apps/browser/dist/dist-chrome-mv3.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload Chrome MV3 Beta artifact (DO NOT USE FOR PROD)
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -199,6 +214,7 @@ jobs:
           name: DO-NOT-USE-FOR-PROD-dist-chrome-MV3-beta-${{ env._BUILD_NUMBER }}.zip
           path: browser-source/apps/browser/dist/dist-chrome-mv3-beta.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload Firefox artifact
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -206,6 +222,7 @@ jobs:
           name: dist-firefox-${{ env._BUILD_NUMBER }}.zip
           path: browser-source/apps/browser/dist/dist-firefox.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload Firefox MV3 artifact (DO NOT USE FOR PROD)
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -213,6 +230,7 @@ jobs:
           name: DO-NOT-USE-FOR-PROD-dist-firefox-MV3-${{ env._BUILD_NUMBER }}.zip
           path: browser-source/apps/browser/dist/dist-firefox-mv3.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload Edge artifact
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -220,6 +238,7 @@ jobs:
           name: dist-edge-${{ env._BUILD_NUMBER }}.zip
           path: browser-source/apps/browser/dist/dist-edge.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload Edge MV3 artifact (DO NOT USE FOR PROD)
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -227,6 +246,7 @@ jobs:
           name: DO-NOT-USE-FOR-PROD-dist-edge-MV3-${{ env._BUILD_NUMBER }}.zip
           path: browser-source/apps/browser/dist/dist-edge-mv3.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload browser source
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -234,6 +254,7 @@ jobs:
           name: browser-source-${{ env._BUILD_NUMBER }}.zip
           path: browser-source.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload coverage artifact
         if: false
@@ -242,6 +263,7 @@ jobs:
           name: coverage-${{ env._BUILD_NUMBER }}.zip
           path: browser-source/apps/browser/coverage/coverage-${{ env._BUILD_NUMBER }}.zip
           if-no-files-found: error
+          overwrite: true
 
   build-safari:
     name: Build Safari
@@ -255,6 +277,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Set up Node
         uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
@@ -357,6 +381,7 @@ jobs:
           name: dist-safari-${{ env._BUILD_NUMBER }}.zip
           path: apps/browser/dist/dist-safari.zip
           if-no-files-found: error
+          overwrite: true
 
   crowdin-push:
     name: Crowdin Push
@@ -368,6 +393,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Login to Azure
         uses: Azure/login@e15b166166a8746d1a47596803bd8c1b595455cf # v1.6.0

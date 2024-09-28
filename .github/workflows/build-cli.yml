@@ -27,8 +27,16 @@ on:
       - '!*.txt'
       - '.github/workflows/build-cli.yml'
       - 'bitwarden_license/bit-cli/**'
+  workflow_call:
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
   workflow_dispatch:
-    inputs: {}
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
 
 defaults:
   run:
@@ -44,6 +52,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Get Package Version
         id: retrieve-package-version
@@ -85,6 +95,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Setup Unix Vars
         run: |
@@ -135,6 +147,7 @@ jobs:
           name: bw${{ matrix.license_type.artifact_prefix }}-${{ env.LOWER_RUNNER_OS }}-${{ env._PACKAGE_VERSION }}.zip
           path: apps/cli/dist/bw${{ matrix.license_type.artifact_prefix }}-${{ env.LOWER_RUNNER_OS }}-${{ env._PACKAGE_VERSION }}.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload unix checksum asset
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -142,6 +155,7 @@ jobs:
           name: bw${{ matrix.license_type.artifact_prefix }}-${{ env.LOWER_RUNNER_OS }}-sha256-${{ env._PACKAGE_VERSION }}.txt
           path: apps/cli/dist/bw${{ matrix.license_type.artifact_prefix }}-${{ env.LOWER_RUNNER_OS }}-sha256-${{ env._PACKAGE_VERSION }}.txt
           if-no-files-found: error
+          overwrite: true
 
   cli-windows:
     name: "windows - ${{ matrix.license_type.readable }}"
@@ -163,6 +177,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Setup Windows builder
         run: |
@@ -274,6 +290,7 @@ jobs:
           name: bw${{ matrix.license_type.artifact_prefix }}-windows-${{ env._PACKAGE_VERSION }}.zip
           path: apps/cli/dist/bw${{ matrix.license_type.artifact_prefix }}-windows-${{ env._PACKAGE_VERSION }}.zip
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload windows checksum asset
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -281,6 +298,7 @@ jobs:
           name: bw${{ matrix.license_type.artifact_prefix }}-windows-sha256-${{ env._PACKAGE_VERSION }}.txt
           path: apps/cli/dist/bw${{ matrix.license_type.artifact_prefix }}-windows-sha256-${{ env._PACKAGE_VERSION }}.txt
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload Chocolatey asset
         if: matrix.license_type.build_prefix == 'bit'
@@ -289,7 +307,8 @@ jobs:
           name: bitwarden-cli.${{ env._PACKAGE_VERSION }}.nupkg
           path: apps/cli/dist/chocolatey/bitwarden-cli.${{ env._PACKAGE_VERSION }}.nupkg
           if-no-files-found: error
-      
+          overwrite: true
+
       - name: Zip NPM Build Artifact
         run: Get-ChildItem -Path .\build | Compress-Archive -DestinationPath .\bitwarden-cli-${{ env._PACKAGE_VERSION }}-npm-build.zip
 
@@ -300,6 +319,7 @@ jobs:
           name: bitwarden-cli-${{ env._PACKAGE_VERSION }}-npm-build.zip
           path: apps/cli/bitwarden-cli-${{ env._PACKAGE_VERSION }}-npm-build.zip
           if-no-files-found: error
+          overwrite: true
 
   snap:
     name: Build Snap
@@ -313,6 +333,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Print environment
         run: |
@@ -369,6 +391,7 @@ jobs:
           name: bw_${{ env._PACKAGE_VERSION }}_amd64.snap
           path: apps/cli/dist/snap/bw_${{ env._PACKAGE_VERSION }}_amd64.snap
           if-no-files-found: error
+          overwrite: true
 
       - name: Upload snap checksum asset
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
@@ -376,6 +399,7 @@ jobs:
           name: bw-snap-sha256-${{ env._PACKAGE_VERSION }}.txt
           path: apps/cli/dist/snap/bw-snap-sha256-${{ env._PACKAGE_VERSION }}.txt
           if-no-files-found: error
+          overwrite: true
 
 
   check-failures:

@@ -27,8 +27,16 @@ on:
       - '.github/workflows/build-web.yml'
   release:
     types: [published]
+  workflow_call:
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
   workflow_dispatch:
     inputs:
+      checkout_ref:
+        required: false
+        type: string
       custom_tag_extension:
         description: "Custom image tag extension"
         required: false
@@ -46,6 +54,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Get GitHub sha as version
         id: version
@@ -92,6 +102,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Set up Node
         uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
@@ -158,6 +170,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Check Branch to Publish
         env:
@@ -256,6 +270,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          ref: ${{ inputs.checkout_ref || github.ref }}
 
       - name: Login to Azure
         uses: Azure/login@e15b166166a8746d1a47596803bd8c1b595455cf # v1.6.0

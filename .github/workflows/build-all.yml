@@ -1,0 +1,38 @@
+---
+name: Build all
+
+on:
+  workflow_dispatch:
+    inputs:
+      checkout_ref:
+        required: false
+        type: string
+
+jobs:
+  build-browser:
+    name: Browser build
+    uses: ./.github/workflows/build-browser.yml
+    secrets: inherit
+    with:
+      checkout_ref: ${{ inputs.checkout_ref || github.ref }}
+
+  build-cli:
+    name: CLI build
+    uses: ./.github/workflows/build-cli.yml
+    secrets: inherit
+    with:
+      checkout_ref: ${{ inputs.checkout_ref || github.ref }}
+
+  build-desktop:
+    name: Desktop build
+    uses: ./.github/workflows/build-desktop.yml
+    secrets: inherit
+    with:
+      checkout_ref: ${{ inputs.checkout_ref || github.ref }}
+
+  build-web:
+    name: Web build
+    uses: ./.github/workflows/build-web.yml
+    secrets: inherit
+    with:
+      checkout_ref: ${{ inputs.checkout_ref || github.ref }}
