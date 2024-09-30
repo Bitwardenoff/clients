@@ -457,11 +457,10 @@ describe("LockComponent", () => {
   });
 
   describe("canUseBiometric", () => {
-    it("should call getUserId() on stateService", async () => {
-      stateServiceMock.getUserId.mockResolvedValue("userId");
+    it("should call biometric.enabled with current active user", async () => {
       await component["canUseBiometric"]();
 
-      expect(ipc.platform.biometric.enabled).toHaveBeenCalledWith("userId");
+      expect(ipc.platform.biometric.enabled).toHaveBeenCalledWith(mockUserId);
     });
   });
 
