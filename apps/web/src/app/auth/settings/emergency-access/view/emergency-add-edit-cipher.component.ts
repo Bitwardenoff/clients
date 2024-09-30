@@ -18,6 +18,7 @@ import { CollectionService } from "@bitwarden/common/vault/abstractions/collecti
 import { FolderService } from "@bitwarden/common/vault/abstractions/folder/folder.service.abstraction";
 import { TotpService } from "@bitwarden/common/vault/abstractions/totp.service";
 import { Cipher } from "@bitwarden/common/vault/models/domain/cipher";
+import { CipherAuthorizationServiceAbstraction } from "@bitwarden/common/vault/services/cipher-authorization.service";
 import { DialogService } from "@bitwarden/components";
 import { PasswordGenerationServiceAbstraction } from "@bitwarden/generator-legacy";
 import { PasswordRepromptService } from "@bitwarden/vault";
@@ -54,6 +55,7 @@ export class EmergencyAddEditCipherComponent extends BaseAddEditComponent {
     datePipe: DatePipe,
     configService: ConfigService,
     billingAccountProfileStateService: BillingAccountProfileStateService,
+    cipherAuthorizationService: CipherAuthorizationServiceAbstraction,
   ) {
     super(
       cipherService,
@@ -76,6 +78,7 @@ export class EmergencyAddEditCipherComponent extends BaseAddEditComponent {
       datePipe,
       configService,
       billingAccountProfileStateService,
+      cipherAuthorizationService,
     );
   }
 

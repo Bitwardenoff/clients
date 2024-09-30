@@ -1,17 +1,20 @@
 import { DIALOG_DATA, DialogConfig, DialogRef } from "@angular/cdk/dialog";
 import { CommonModule } from "@angular/common";
 import { Component, Inject, OnInit, EventEmitter } from "@angular/core";
+import { Observable } from "rxjs";
 
 import { OrganizationService } from "@bitwarden/common/admin-console/abstractions/organization/organization.service.abstraction";
 import { Organization } from "@bitwarden/common/admin-console/models/domain/organization";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { MessagingService } from "@bitwarden/common/platform/abstractions/messaging.service";
+import { CollectionId } from "@bitwarden/common/types/guid";
 import { CipherService } from "@bitwarden/common/vault/abstractions/cipher.service";
 import { ViewPasswordHistoryService } from "@bitwarden/common/vault/abstractions/view-password-history.service";
 import { CipherType } from "@bitwarden/common/vault/enums/cipher-type";
 import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
 import { CollectionView } from "@bitwarden/common/vault/models/view/collection.view";
+import { CipherAuthorizationServiceAbstraction } from "@bitwarden/common/vault/services/cipher-authorization.service";
 import {
   AsyncActionsModule,
   DialogModule,
@@ -33,6 +36,11 @@ export interface ViewCipherDialogParams {
    * `CipherService` and the `collectionIds` property of the cipher.
    */
   collections?: CollectionView[];
+
+  /**
+   * Optional collection ID used to know the collection filter selected.
+   */
+  activeCollectionId?: CollectionId;
 
   /**
    * If true, the edit button will be disabled in the dialog.
@@ -70,6 +78,8 @@ export class ViewComponent implements OnInit {
   cipherTypeString: string;
   organization: Organization;
 
+  canDeleteCipher$: Observable<boolean>;
+
   constructor(
     @Inject(DIALOG_DATA) public params: ViewCipherDialogParams,
     private dialogRef: DialogRef<ViewCipherDialogCloseResult>,
@@ -80,6 +90,7 @@ export class ViewComponent implements OnInit {
     private cipherService: CipherService,
     private toastService: ToastService,
     private organizationService: OrganizationService,
+    private cipherAuthorizationService: CipherAuthorizationServiceAbstraction,
   ) {}
 
   /**
@@ -92,6 +103,11 @@ export class ViewComponent implements OnInit {
     if (this.cipher.organizationId) {
       this.organization = await this.organizationService.get(this.cipher.organizationId);
     }
+
+    this.canDeleteCipher$ = this.cipherAuthorizationService.canDeleteCipher$(
+      this.cipher,
+      this.params.activeCollectionId,
+    );
   }
 
   /**

@@ -122,6 +122,10 @@ import { SendService } from "@bitwarden/common/tools/send/services/send.service"
 import { UserId } from "@bitwarden/common/types/guid";
 import { VaultTimeoutStringType } from "@bitwarden/common/types/vault-timeout.type";
 import { InternalFolderService } from "@bitwarden/common/vault/abstractions/folder/folder.service.abstraction";
+import {
+  CipherAuthorizationService,
+  CipherAuthorizationServiceAbstraction,
+} from "@bitwarden/common/vault/services/cipher-authorization.service";
 import { CipherService } from "@bitwarden/common/vault/services/cipher.service";
 import { CollectionService } from "@bitwarden/common/vault/services/collection.service";
 import { CipherFileUploadService } from "@bitwarden/common/vault/services/file-upload/cipher-file-upload.service";
@@ -247,6 +251,7 @@ export class ServiceContainer {
   userAutoUnlockKeyService: UserAutoUnlockKeyService;
   kdfConfigService: KdfConfigServiceAbstraction;
   taskSchedulerService: TaskSchedulerService;
+  cipherAuthorizationService: CipherAuthorizationServiceAbstraction;
 
   constructor() {
     let p = null;
@@ -778,6 +783,11 @@ export class ServiceContainer {
     this.organizationApiService = new OrganizationApiService(this.apiService, this.syncService);
 
     this.providerApiService = new ProviderApiService(this.apiService);
+
+    this.cipherAuthorizationService = new CipherAuthorizationService(
+      this.collectionService,
+      this.organizationService,
+    );
   }
 
   async logout() {

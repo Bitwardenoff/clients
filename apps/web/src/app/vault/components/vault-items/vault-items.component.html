@@ -74,7 +74,7 @@
               {{ "restoreSelected" | i18n }}
             </button>
             <button
-              *ngIf="deleteAllowed || showBulkTrashOptions"
+              *ngIf="showDelete() || showBulkTrashOptions"
               type="button"
               bitMenuItem
               (click)="bulkDelete()"
@@ -132,6 +132,7 @@
           [collections]="allCollections"
           [checked]="selection.isSelected(item)"
           [canEditCipher]="canEditCipher(item.cipher) && vaultBulkManagementActionEnabled"
+          [canManageCollection]="canManageCollection(item.cipher)"
           [vaultBulkManagementActionEnabled]="vaultBulkManagementActionEnabled"
           (checkedToggled)="selection.toggle(item)"
           (onEvent)="event($event)"

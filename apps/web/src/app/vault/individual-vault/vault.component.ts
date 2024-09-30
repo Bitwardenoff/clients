@@ -47,7 +47,7 @@ import { MessagingService } from "@bitwarden/common/platform/abstractions/messag
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { SyncService } from "@bitwarden/common/platform/sync";
-import { CipherId, CollectionId, OrganizationId } from "@bitwarden/common/types/guid";
+import { CipherId, CollectionId, OrganizationId, UserId } from "@bitwarden/common/types/guid";
 import { CipherService } from "@bitwarden/common/vault/abstractions/cipher.service";
 import { CollectionService } from "@bitwarden/common/vault/abstractions/collection.service";
 import { TotpService } from "@bitwarden/common/vault/abstractions/totp.service";
@@ -186,6 +186,7 @@ export class VaultComponent implements OnInit, OnDestroy {
   protected vaultBulkManagementActionEnabled$ = this.configService.getFeatureFlag$(
     FeatureFlag.VaultBulkManagementAction,
   );
+  private activeUserId: UserId;
   private searchText$ = new Subject<string>();
   private refresh$ = new BehaviorSubject<void>(null);
   private destroy$ = new Subject<void>();
@@ -228,6 +229,10 @@ export class VaultComponent implements OnInit, OnDestroy {
       this.platformUtilsService.isSelfHost()
         ? "trashCleanupWarningSelfHosted"
         : "trashCleanupWarning",
+    );
+
+    this.activeUserId = await firstValueFrom(
+      this.accountService.activeAccount$.pipe(map((a) => a?.id)),
     );
 
     const firstSetup$ = this.route.queryParams.pipe(
@@ -749,6 +754,8 @@ export class VaultComponent implements OnInit, OnDestroy {
       this.cipherAddEditModalRef,
       (comp) => {
         comp.cipherId = id;
+        comp.collectionId = this.selectedCollection?.node.id;
+
         comp.onSavedCipher.pipe(takeUntil(this.destroy$)).subscribe(() => {
           modal.close();
           this.refresh();
@@ -841,17 +848,17 @@ export class VaultComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const activeUserId = await firstValueFrom(
-      this.accountService.activeAccount$.pipe(map((a) => a?.id)),
-    );
     // Decrypt the cipher.
     const cipherView = await cipher.decrypt(
-      await this.cipherService.getKeyForCipherKeyDecryption(cipher, activeUserId),
+      await this.cipherService.getKeyForCipherKeyDecryption(cipher, this.activeUserId),
     );
 
     // Open the dialog.
     const dialogRef = openViewCipherDialog(this.dialogService, {
-      data: { cipher: cipherView },
+      data: {
+        cipher: cipherView,
+        activeCollectionId: this.selectedCollection?.node.id as CollectionId,
+      },
     });
 
     // Wait for the dialog to close.

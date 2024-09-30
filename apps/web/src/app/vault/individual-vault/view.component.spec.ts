@@ -14,6 +14,7 @@ import { CipherService } from "@bitwarden/common/vault/abstractions/cipher.servi
 import { CollectionService } from "@bitwarden/common/vault/abstractions/collection.service";
 import { FolderService } from "@bitwarden/common/vault/abstractions/folder/folder.service.abstraction";
 import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
+import { CipherAuthorizationServiceAbstraction } from "@bitwarden/common/vault/services/cipher-authorization.service";
 import { DialogService, ToastService } from "@bitwarden/components";
 
 import { ViewCipherDialogParams, ViewCipherDialogResult, ViewComponent } from "./view.component";
@@ -62,6 +63,12 @@ describe("ViewComponent", () => {
           useValue: mock<BillingAccountProfileStateService>(),
         },
         { provide: ConfigService, useValue: mock<ConfigService>() },
+        {
+          provide: CipherAuthorizationServiceAbstraction,
+          useValue: {
+            canDeleteCipher$: jest.fn().mockReturnValue(true),
+          },
+        },
       ],
     }).compileComponents();
 

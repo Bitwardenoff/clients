@@ -235,6 +235,10 @@ import {
 } from "@bitwarden/common/vault/abstractions/folder/folder.service.abstraction";
 import { TotpService as TotpServiceAbstraction } from "@bitwarden/common/vault/abstractions/totp.service";
 import { VaultSettingsService as VaultSettingsServiceAbstraction } from "@bitwarden/common/vault/abstractions/vault-settings/vault-settings.service";
+import {
+  CipherAuthorizationService,
+  CipherAuthorizationServiceAbstraction,
+} from "@bitwarden/common/vault/services/cipher-authorization.service";
 import { CipherService } from "@bitwarden/common/vault/services/cipher.service";
 import { CollectionService } from "@bitwarden/common/vault/services/collection.service";
 import { CipherFileUploadService } from "@bitwarden/common/vault/services/file-upload/cipher-file-upload.service";
@@ -1312,6 +1316,11 @@ const safeProviders: SafeProvider[] = [
     provide: ViewCacheService,
     useExisting: NoopViewCacheService,
     deps: [],
+  }),
+  safeProvider({
+    provide: CipherAuthorizationServiceAbstraction,
+    useClass: CipherAuthorizationService,
+    deps: [CollectionServiceAbstraction, OrganizationServiceAbstraction],
   }),
 ];
 
