@@ -37,8 +37,10 @@ const plugins = [
     contextRegExp: /node-fetch/,
   }),
   new webpack.EnvironmentPlugin({
+    ENV: ENV,
     BWCLI_ENV: ENV,
     FLAGS: envConfig.flags,
+    DEV_FLAGS: envConfig.devFlags,
   }),
   new webpack.IgnorePlugin({
     resourceRegExp: /canvas/,
@@ -76,7 +78,7 @@ const webpackConfig = {
   externals: [
     nodeExternals({
       modulesDir: "../../node_modules",
-      allowlist: [/@bitwarden/],
+      allowlist: [/@bitwarden\/(?!sdk-internal)/],
     }),
   ],
 };

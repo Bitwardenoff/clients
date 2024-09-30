@@ -40,6 +40,7 @@ import { FileDownloadService } from "@bitwarden/common/platform/abstractions/fil
 import { I18nService as I18nServiceAbstraction } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { PlatformUtilsService as PlatformUtilsServiceAbstraction } from "@bitwarden/common/platform/abstractions/platform-utils.service";
+import { SdkClientFactory } from "@bitwarden/common/platform/abstractions/sdk/sdk-client-factory";
 import { AbstractStorageService } from "@bitwarden/common/platform/abstractions/storage.service";
 import { BiometricsService } from "@bitwarden/common/platform/biometrics/biometric.service";
 import { ThemeType } from "@bitwarden/common/platform/enums";
@@ -48,6 +49,7 @@ import { MemoryStorageService } from "@bitwarden/common/platform/services/memory
 // eslint-disable-next-line import/no-restricted-paths -- Implementation for memory storage
 import { MigrationBuilderService } from "@bitwarden/common/platform/services/migration-builder.service";
 import { MigrationRunner } from "@bitwarden/common/platform/services/migration-runner";
+import { NoopSdkClientFactory } from "@bitwarden/common/platform/services/sdk/noop-sdk-client-factory";
 import { StorageServiceProvider } from "@bitwarden/common/platform/services/storage-service.provider";
 /* eslint-disable import/no-restricted-paths -- Implementation for memory storage */
 import { GlobalStateProvider, StateProvider } from "@bitwarden/common/platform/state";
@@ -60,6 +62,7 @@ import {
 } from "@bitwarden/common/platform/theming/theme-state.service";
 import { VaultTimeout, VaultTimeoutStringType } from "@bitwarden/common/types/vault-timeout.type";
 
+import { flagEnabled } from "../../utils/flags";
 import { PolicyListService } from "../admin-console/core/policy-list.service";
 import { WebSetPasswordJitService, WebRegistrationFinishService } from "../auth";
 import { AcceptOrganizationInviteService } from "../auth/organization-invite/accept-organization.service";
@@ -68,6 +71,7 @@ import { I18nService } from "../core/i18n.service";
 import { WebBiometricsService } from "../platform/web-biometric.service";
 import { WebEnvironmentService } from "../platform/web-environment.service";
 import { WebMigrationRunner } from "../platform/web-migration-runner";
+import { WebSdkClientFactory } from "../platform/web-sdk-client-factory";
 import { WebStorageServiceProvider } from "../platform/web-storage-service.provider";
 import { CollectionAdminService } from "../vault/core/collection-admin.service";
 
@@ -214,6 +218,11 @@ const safeProviders: SafeProvider[] = [
     provide: AppIdService,
     useClass: DefaultAppIdService,
     deps: [OBSERVABLE_DISK_LOCAL_STORAGE, LogService],
+  }),
+  safeProvider({
+    provide: SdkClientFactory,
+    useClass: flagEnabled("sdk") ? WebSdkClientFactory : NoopSdkClientFactory,
+    deps: [],
   }),
 ];
 
