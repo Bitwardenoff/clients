@@ -28,6 +28,7 @@
           <environment-selector #environmentSelector (onOpenSelfHostedSettings)="settings()">
           </environment-selector>
         </div>
+
         <div class="checkbox remember-email">
           <label for="rememberEmail">
             <input
@@ -39,6 +40,7 @@
             {{ "rememberEmail" | i18n }}
           </label>
         </div>
+
         <div class="buttons with-rows">
           <div class="buttons-row">
             <button type="button" class="btn primary block" (click)="continue()">
@@ -46,6 +48,7 @@
             </button>
           </div>
         </div>
+
         <div class="sub-options">
           <p class="no-margin">{{ "newAroundHere" | i18n }}</p>
           <button type="button" class="text text-primary" [routerLink]="registerRoute$ | async">

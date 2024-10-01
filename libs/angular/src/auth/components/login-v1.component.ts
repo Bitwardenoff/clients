@@ -35,15 +35,17 @@ import {
 import { CaptchaProtectedComponent } from "./captcha-protected.component";
 
 @Directive()
-export class LoginComponent extends CaptchaProtectedComponent implements OnInit, OnDestroy {
+export class LoginComponentV1 extends CaptchaProtectedComponent implements OnInit, OnDestroy {
   @ViewChild("masterPasswordInput", { static: true }) masterPasswordInput: ElementRef;
 
   showPassword = false;
   formPromise: Promise<AuthResult>;
+
   onSuccessfulLogin: () => Promise<any>;
   onSuccessfulLoginNavigate: (userId: UserId) => Promise<any>;
   onSuccessfulLoginTwoFactorNavigate: () => Promise<any>;
   onSuccessfulLoginForceResetNavigate: () => Promise<any>;
+
   showLoginWithDevice: boolean;
   validatedEmail = false;
   paramEmailSet = false;
@@ -200,6 +202,7 @@ export class LoginComponent extends CaptchaProtectedComponent implements OnInit,
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           this.onSuccessfulLogin();
         }
+
         if (this.onSuccessfulLoginNavigate != null) {
           // FIXME: Verify that this floating promise is intentional. If it is, add an explanatory comment and ensure there is proper error handling.
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -284,6 +287,7 @@ export class LoginComponent extends CaptchaProtectedComponent implements OnInit,
   async validateEmail() {
     this.formGroup.controls.email.markAsTouched();
     const emailValid = this.formGroup.get("email").valid;
+
     if (emailValid) {
       this.toggleValidateEmail(true);
       await this.getLoginWithDevice(this.loggedEmail);
@@ -338,8 +342,7 @@ export class LoginComponent extends CaptchaProtectedComponent implements OnInit,
     await this.loginEmailService.saveEmailSettings();
   }
 
-  // Legacy accounts used the master key to encrypt data. Migration is required
-  // but only performed on web
+  // Legacy accounts used the master key to encrypt data. Migration is required but only performed on web
   protected async handleMigrateEncryptionKey(result: AuthResult): Promise<boolean> {
     if (!result.requiresEncryptionKeyMigration) {
       return false;

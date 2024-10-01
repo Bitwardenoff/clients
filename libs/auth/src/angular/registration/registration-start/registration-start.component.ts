@@ -6,9 +6,12 @@ import { Subject, takeUntil } from "rxjs";
 
 import { JslibModule } from "@bitwarden/angular/jslib.module";
 import { AccountApiService } from "@bitwarden/common/auth/abstractions/account-api.service";
+import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
+import { AuthService } from "@bitwarden/common/auth/abstractions/auth.service";
 import { RegisterSendVerificationEmailRequest } from "@bitwarden/common/auth/models/request/registration/register-send-verification-email.request";
 import { RegionConfig, Region } from "@bitwarden/common/platform/abstractions/environment.service";
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
+import { StateProvider } from "@bitwarden/common/platform/state";
 import {
   AsyncActionsModule,
   ButtonModule,
@@ -18,6 +21,7 @@ import {
   LinkModule,
 } from "@bitwarden/components";
 
+import { LoginEmailService } from "../../../common";
 import { RegistrationCheckEmailIcon } from "../../icons/registration-check-email.icon";
 import { RegistrationEnvSelectorComponent } from "../registration-env-selector/registration-env-selector.component";
 
@@ -47,6 +51,17 @@ const DEFAULT_MARKETING_EMAILS_PREF_BY_REGION: Record<Region, boolean> = {
     LinkModule,
     IconModule,
     RegistrationEnvSelectorComponent,
+  ],
+  providers: [
+    {
+      provide: LoginEmailService,
+      useFactory: (
+        accountService: AccountService,
+        authService: AuthService,
+        stateProvider: StateProvider,
+      ) => new LoginEmailService(accountService, authService, stateProvider),
+      deps: [AccountService, AuthService, StateProvider],
+    },
   ],
 })
 export class RegistrationStartComponent implements OnInit, OnDestroy {
@@ -88,6 +103,7 @@ export class RegistrationStartComponent implements OnInit, OnDestroy {
     private platformUtilsService: PlatformUtilsService,
     private accountApiService: AccountApiService,
     private router: Router,
+    private loginEmailService: LoginEmailService,
   ) {
     this.isSelfHost = platformUtilsService.isSelfHost();
   }
@@ -97,6 +113,15 @@ export class RegistrationStartComponent implements OnInit, OnDestroy {
     this.registrationStartStateChange.emit(this.state);
 
     this.listenForQueryParamChanges();
+
+    /**
+     * If the user has a login email, set the email field to the login email.
+     */
+    this.loginEmailService.loginEmail$.pipe(takeUntil(this.destroy$)).subscribe((email) => {
+      if (email) {
+        this.formGroup.patchValue({ email });
+      }
+    });
   }
 
   private listenForQueryParamChanges() {
