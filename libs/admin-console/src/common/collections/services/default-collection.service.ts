@@ -1,11 +1,10 @@
 import { firstValueFrom, map, Observable } from "rxjs";
 import { Jsonify } from "type-fest";
 
+import { CryptoService } from "@bitwarden/common/platform/abstractions/crypto.service";
 import { EncryptService } from "@bitwarden/common/platform/abstractions/encrypt.service";
-
-import { CryptoService } from "../../platform/abstractions/crypto.service";
-import { I18nService } from "../../platform/abstractions/i18n.service";
-import { Utils } from "../../platform/misc/utils";
+import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
+import { Utils } from "@bitwarden/common/platform/misc/utils";
 import {
   ActiveUserState,
   StateProvider,
@@ -13,14 +12,13 @@ import {
   DeriveDefinition,
   DerivedState,
   UserKeyDefinition,
-} from "../../platform/state";
-import { CollectionId, OrganizationId, UserId } from "../../types/guid";
-import { CollectionService as CollectionServiceAbstraction } from "../../vault/abstractions/collection.service";
-import { CollectionData } from "../models/data/collection.data";
-import { Collection } from "../models/domain/collection";
-import { TreeNode } from "../models/domain/tree-node";
-import { CollectionView } from "../models/view/collection.view";
-import { ServiceUtils } from "../service-utils";
+} from "@bitwarden/common/platform/state";
+import { CollectionId, OrganizationId, UserId } from "@bitwarden/common/types/guid";
+import { TreeNode } from "@bitwarden/common/vault/models/domain/tree-node";
+import { ServiceUtils } from "@bitwarden/common/vault/service-utils";
+
+import { CollectionService } from "../abstractions";
+import { Collection, CollectionData, CollectionView } from "../models";
 
 const ENCRYPTED_COLLECTION_DATA_KEY = UserKeyDefinition.record<CollectionData, CollectionId>(
   COLLECTION_DATA,
@@ -34,7 +32,7 @@ const ENCRYPTED_COLLECTION_DATA_KEY = UserKeyDefinition.record<CollectionData, C
 const DECRYPTED_COLLECTION_DATA_KEY = DeriveDefinition.from<
   Record<CollectionId, CollectionData>,
   CollectionView[],
-  { collectionService: CollectionService }
+  { collectionService: DefaultCollectionService }
 >(ENCRYPTED_COLLECTION_DATA_KEY, {
   deserializer: (obj) => obj.map((collection) => CollectionView.fromJSON(collection)),
   derive: async (collections: Record<CollectionId, CollectionData>, { collectionService }) => {
@@ -49,7 +47,7 @@ const DECRYPTED_COLLECTION_DATA_KEY = DeriveDefinition.from<
 
 const NestingDelimiter = "/";
 
-export class CollectionService implements CollectionServiceAbstraction {
+export class DefaultCollectionService implements CollectionService {
   private encryptedCollectionDataState: ActiveUserState<Record<CollectionId, CollectionData>>;
   encryptedCollections$: Observable<Collection[]>;
   private decryptedCollectionDataState: DerivedState<CollectionView[]>;

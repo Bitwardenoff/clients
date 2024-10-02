@@ -1,10 +1,9 @@
 import { Observable } from "rxjs";
 
-import { CollectionId, UserId } from "../../types/guid";
-import { CollectionData } from "../models/data/collection.data";
-import { Collection } from "../models/domain/collection";
-import { TreeNode } from "../models/domain/tree-node";
-import { CollectionView } from "../models/view/collection.view";
+import { CollectionId, UserId } from "@bitwarden/common/src/types/guid";
+import { TreeNode } from "@bitwarden/common/src/vault/models/domain/tree-node";
+
+import { CollectionData, Collection, CollectionView } from "../models";
 
 export abstract class CollectionService {
   decryptedCollections$: Observable<CollectionView[]>;
