@@ -4,6 +4,7 @@ import { firstValueFrom } from "rxjs";
 import { Organization } from "@bitwarden/common/admin-console/models/domain/organization";
 import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
 import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
+import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { CipherType } from "@bitwarden/common/vault/enums";
 import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
 import { CollectionView } from "@bitwarden/common/vault/models/view/collection.view";
@@ -44,7 +45,10 @@ export class VaultCipherRowComponent implements OnInit {
 
   protected CipherType = CipherType;
 
-  constructor(private configService: ConfigService) {}
+  constructor(
+    private configService: ConfigService,
+    private i18nService: I18nService,
+  ) {}
 
   /**
    * Lifecycle hook for component initialization.
@@ -85,6 +89,31 @@ export class VaultCipherRowComponent implements OnInit {
 
   protected get isNotDeletedLoginCipher() {
     return this.cipher.type === this.CipherType.Login && !this.cipher.isDeleted;
+  }
+
+  protected get permissionText() {
+    if (!this.cipher.organizationId || this.cipher.collectionIds.length === 0) {
+      return this.i18nService.t("canManage");
+    }
+
+    const filteredCollections = this.cipher.collectionIds.find((id) => {
+      return this.collections.find((collection) => {
+        return collection.id === id && collection.manage;
+      });
+    });
+    if (filteredCollections?.length > 0) {
+      return this.i18nService.t("canManage");
+    }
+
+    if (this.cipher.edit) {
+      return this.cipher.viewPassword
+        ? this.i18nService.t("canEdit")
+        : this.i18nService.t("canEditExceptPass");
+    } else {
+      return this.cipher.viewPassword
+        ? this.i18nService.t("canView")
+        : this.i18nService.t("canViewExceptPass");
+    }
   }
 
   protected get showCopyPassword(): boolean {
