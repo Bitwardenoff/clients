@@ -98,6 +98,7 @@ export class LoginComponent extends BaseLoginComponent implements OnInit, OnDest
       webAuthnLoginService,
       registerRouteService,
       toastService,
+      syncService,
     );
     super.onSuccessfulLogin = () => {
       return syncService.fullSync(true);

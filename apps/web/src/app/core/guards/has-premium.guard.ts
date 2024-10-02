@@ -6,11 +6,13 @@ import {
   CanActivateFn,
   UrlTree,
 } from "@angular/router";
-import { Observable } from "rxjs";
-import { tap } from "rxjs/operators";
+import { Observable, of } from "rxjs";
+import { catchError, filter, map, switchMap, timeout } from "rxjs/operators";
 
+import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
 import { BillingAccountProfileStateService } from "@bitwarden/common/billing/abstractions/account/billing-account-profile-state.service";
 import { MessagingService } from "@bitwarden/common/platform/abstractions/messaging.service";
+import { SyncService } from "@bitwarden/common/platform/sync";
 
 /**
  * CanActivate guard that checks if the user has premium and otherwise triggers the "premiumRequired"
@@ -24,18 +26,33 @@ export function hasPremiumGuard(): CanActivateFn {
     const router = inject(Router);
     const messagingService = inject(MessagingService);
     const billingAccountProfileStateService = inject(BillingAccountProfileStateService);
+    const accountService = inject(AccountService);
+    const syncService = inject(SyncService);
 
     return billingAccountProfileStateService.hasPremiumFromAnySource$.pipe(
-      tap((userHasPremium: boolean) => {
-        if (!userHasPremium) {
-          messagingService.send("premiumRequired");
+      switchMap((userHasPremium: boolean) => {
+        if (userHasPremium) {
+          // If user has premium, allow navigation
+          return of(true);
         }
+        return accountService.activeAccount$.pipe(
+          filter((a) => a != null),
+          switchMap((a) => syncService.lastSync$(a.id)),
+          filter((lastSyncDate) => lastSyncDate != null),
+          timeout(10_000),
+          switchMap(() => billingAccountProfileStateService.hasPremiumFromAnySource$),
+          map((userHasPremium: boolean) => {
+            if (!userHasPremium) {
+              messagingService.send("premiumRequired");
+              return router.createUrlTree(["/"]);
+            }
+            return true; // Allow navigation if user has premium
+          }),
+        );
       }),
-      // Prevent trapping the user on the login page, since that's an awful UX flow
-      tap((userHasPremium: boolean) => {
-        if (!userHasPremium && router.url === "/login") {
-          return router.createUrlTree(["/"]);
-        }
+      catchError(() => {
+        messagingService.send("premiumRequired");
+        return of(router.createUrlTree(["/"]));
       }),
     );
   };
