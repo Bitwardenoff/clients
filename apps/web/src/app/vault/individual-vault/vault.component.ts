@@ -793,17 +793,20 @@ export class VaultComponent implements OnInit, OnDestroy {
     const result: AddEditCipherDialogCloseResult = await firstValueFrom(dialogRef.closed);
 
     /**
-     * Refresh the vault if the dialog was closed by adding, editing, or deleting a cipher.
+     * Show the cloned cipher in the vault.
      */
-    if (result?.action === AddEditCipherDialogResult.Edited) {
+    if (result?.action === AddEditCipherDialogResult.Cloned) {
       this.refresh();
     }
 
     /**
-     * View the cipher if the dialog was closed by editing the cipher.
+     * View the cipher if the dialog was closed by editing or cloning the cipher.
      */
-    if (result?.action === AddEditCipherDialogResult.Edited) {
-      this.go({ itemId: cipher.id, action: "view" });
+    if (
+      result?.action === AddEditCipherDialogResult.Edited ||
+      result?.action === AddEditCipherDialogResult.Cloned
+    ) {
+      this.go({ itemId: result.id, action: "view" });
       return;
     }
 
@@ -1018,7 +1021,9 @@ export class VaultComponent implements OnInit, OnDestroy {
     }
 
     const component = await this.editCipher(cipher, true);
-    component.cloneMode = true;
+    if (component) {
+      component.cloneMode = true;
+    }
   }
 
   async restore(c: CipherView): Promise<boolean> {

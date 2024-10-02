@@ -29,6 +29,7 @@ import { AttachmentsV2Component } from "./attachments-v2.component";
 export enum AddEditCipherDialogResult {
   Edited = "edited",
   Added = "added",
+  Cloned = "cloned",
   Canceled = "canceled",
 }
 
@@ -153,11 +154,17 @@ export class AddEditComponentV2 implements OnInit {
    * @param cipherView The cipher view that was saved.
    */
   async onCipherSaved(cipherView: CipherView) {
+    let action: AddEditCipherDialogResult;
+
+    if (this.config.mode === "add") {
+      action = AddEditCipherDialogResult.Added;
+    } else if (this.config.mode === "clone") {
+      action = AddEditCipherDialogResult.Cloned;
+    } else {
+      action = AddEditCipherDialogResult.Edited;
+    }
     this.dialogRef.close({
-      action:
-        this.config.mode === "add"
-          ? AddEditCipherDialogResult.Added
-          : AddEditCipherDialogResult.Edited,
+      action,
       id: cipherView.id as CipherId,
     });
   }
