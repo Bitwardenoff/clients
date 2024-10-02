@@ -22,6 +22,7 @@ import { CollectionService } from "@bitwarden/common/vault/abstractions/collecti
 import { FolderService } from "@bitwarden/common/vault/abstractions/folder/folder.service.abstraction";
 import { CipherType } from "@bitwarden/common/vault/enums";
 import { TreeNode } from "@bitwarden/common/vault/models/domain/tree-node";
+import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
 import { CollectionView } from "@bitwarden/common/vault/models/view/collection.view";
 import { FolderView } from "@bitwarden/common/vault/models/view/folder.view";
 import { ServiceUtils } from "@bitwarden/common/vault/service-utils";
@@ -53,9 +54,9 @@ export class VaultFilterService implements VaultFilterServiceAbstraction {
   protected _organizationFilter = new BehaviorSubject<Organization>(null);
 
   filteredFolders$: Observable<FolderView[]> = this.folderService.folderViews$.pipe(
-    combineLatestWith(this._organizationFilter),
-    switchMap(([folders, org]) => {
-      return this.filterFolders(folders, org);
+    combineLatestWith(this.cipherService.cipherViews$, this._organizationFilter),
+    switchMap(([folders, ciphers, org]) => {
+      return this.filterFolders(folders, ciphers, org);
     }),
   );
   folderTree$: Observable<TreeNode<FolderFilter>> = this.filteredFolders$.pipe(
@@ -229,6 +230,7 @@ export class VaultFilterService implements VaultFilterServiceAbstraction {
 
   protected async filterFolders(
     storedFolders: FolderView[],
+    ciphers: CipherView[],
     org?: Organization,
   ): Promise<FolderView[]> {
     // If no org or "My Vault" is selected, show all folders
@@ -237,7 +239,6 @@ export class VaultFilterService implements VaultFilterServiceAbstraction {
     }
 
     // Otherwise, show only folders that have ciphers from the selected org and the "no folder" folder
-    const ciphers = await this.cipherService.getAllDecrypted();
     const orgCiphers = ciphers.filter((c) => c.organizationId == org?.id);
     return storedFolders.filter(
       (f) => orgCiphers.some((oc) => oc.folderId == f.id) || f.id == null,

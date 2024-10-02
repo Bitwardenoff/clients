@@ -36,6 +36,7 @@ describe("vault filter service", () => {
   let organizations: ReplaySubject<Organization[]>;
   let folderViews: ReplaySubject<FolderView[]>;
   let collectionViews: ReplaySubject<CollectionView[]>;
+  let cipherViews: ReplaySubject<CipherView[]>;
   let personalOwnershipPolicy: ReplaySubject<boolean>;
   let singleOrgPolicy: ReplaySubject<boolean>;
   let stateProvider: FakeStateProvider;
@@ -58,6 +59,7 @@ describe("vault filter service", () => {
     organizations = new ReplaySubject<Organization[]>(1);
     folderViews = new ReplaySubject<FolderView[]>(1);
     collectionViews = new ReplaySubject<CollectionView[]>(1);
+    cipherViews = new ReplaySubject<CipherView[]>(1);
     personalOwnershipPolicy = new ReplaySubject<boolean>(1);
     singleOrgPolicy = new ReplaySubject<boolean>(1);
 
@@ -70,6 +72,7 @@ describe("vault filter service", () => {
     policyService.policyAppliesToActiveUser$
       .calledWith(PolicyType.SingleOrg)
       .mockReturnValue(singleOrgPolicy);
+    cipherService.cipherViews$ = cipherViews;
 
     vaultFilterService = new VaultFilterService(
       organizationService,
@@ -163,7 +166,7 @@ describe("vault filter service", () => {
           createCipherView("1", "org test id", "folder test id"),
           createCipherView("2", "non matching org id", "non matching folder id"),
         ];
-        cipherService.getAllDecrypted.mockResolvedValue(storedCiphers);
+        cipherViews.next(storedCiphers);
 
         const storedFolders = [
           createFolderView("folder test id", "test"),
@@ -192,6 +195,7 @@ describe("vault filter service", () => {
           createFolderView("Folder 3 Id", "Folder 1/Folder 3"),
         ];
         folderViews.next(storedFolders);
+        cipherViews.next([]);
 
         const result = await firstValueFrom(vaultFilterService.folderTree$);
 

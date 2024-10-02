@@ -1,4 +1,13 @@
-import { firstValueFrom, map, Observable, skipWhile, switchMap } from "rxjs";
+import {
+  firstValueFrom,
+  map,
+  merge,
+  Observable,
+  shareReplay,
+  skipWhile,
+  Subject,
+  switchMap,
+} from "rxjs";
 import { SemVer } from "semver";
 
 import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
@@ -82,13 +91,16 @@ export class CipherService implements CipherServiceAbstraction {
     this.sortCiphersByLastUsed,
   );
   private ciphersExpectingUpdate: DerivedState<boolean>;
+  /**
+   * Observable that forces the `cipherViews$` observable to re-emit with the provided value.
+   * Used to let subscribers of `cipherViews$` know that the decrypted ciphers have been cleared for the active user.
+   * @private
+   */
+  private forceCipherViews$: Subject<CipherView[]> = new Subject<CipherView[]>();
 
   localData$: Observable<Record<CipherId, LocalData>>;
   ciphers$: Observable<Record<CipherId, CipherData>>;
-  cipherViews$: Observable<Record<CipherId, CipherView>>;
-  viewFor$(id: CipherId) {
-    return this.cipherViews$.pipe(map((views) => views[id]));
-  }
+  cipherViews$: Observable<CipherView[]>;
   addEditCipherInfo$: Observable<AddEditCipherInfo>;
 
   private localDataState: ActiveUserState<Record<CipherId, LocalData>>;
@@ -131,7 +143,12 @@ export class CipherService implements CipherServiceAbstraction {
       switchMap(() => this.encryptedCiphersState.state$),
       map((ciphers) => ciphers ?? {}),
     );
-    this.cipherViews$ = this.decryptedCiphersState.state$.pipe(map((views) => views ?? {}));
+
+    // Decrypted ciphers depend on both ciphers and local data and need to be updated when either changes
+    this.cipherViews$ = merge(this.ciphers$, this.localData$).pipe(
+      switchMap(() => merge(this.forceCipherViews$, this.getAllDecrypted())),
+      shareReplay({ bufferSize: 1, refCount: true }),
+    );
     this.addEditCipherInfo$ = this.addEditCipherInfoState.state$;
   }
 
@@ -160,8 +177,14 @@ export class CipherService implements CipherServiceAbstraction {
   }
 
   async clearCache(userId?: UserId): Promise<void> {
-    userId ??= await firstValueFrom(this.stateProvider.activeUserId$);
+    const activeUserId = await firstValueFrom(this.stateProvider.activeUserId$);
+    userId ??= activeUserId;
     await this.clearDecryptedCiphersState(userId);
+
+    // Force the cipherView$ observable (which always tracks the active user) to re-emit
+    if (userId == activeUserId) {
+      this.forceCipherViews$.next([]);
+    }
   }
 
   async encrypt(
@@ -354,6 +377,11 @@ export class CipherService implements CipherServiceAbstraction {
     return response;
   }
 
+  /**
+   * Decrypts all ciphers for the active user and caches them in memory. If the ciphers have already been decrypted and
+   * cached, the cached ciphers are returned.
+   * @deprecated Use `cipherViews$` observable instead
+   */
   @sequentialize(() => "getAllDecrypted")
   async getAllDecrypted(): Promise<CipherView[]> {
     let decCiphers = await this.getDecryptedCiphers();
@@ -375,7 +403,9 @@ export class CipherService implements CipherServiceAbstraction {
   }
 
   private async getDecryptedCiphers() {
-    return Object.values(await firstValueFrom(this.cipherViews$));
+    return Object.values(
+      await firstValueFrom(this.decryptedCiphersState.state$.pipe(map((c) => c ?? {}))),
+    );
   }
 
   private async decryptCiphers(ciphers: Cipher[], userId: UserId) {
@@ -1245,7 +1275,7 @@ export class CipherService implements CipherServiceAbstraction {
 
     let encryptedCiphers: CipherWithIdRequest[] = [];
 
-    const ciphers = await this.getAllDecrypted();
+    const ciphers = await firstValueFrom(this.cipherViews$);
     if (!ciphers) {
       return encryptedCiphers;
     }
