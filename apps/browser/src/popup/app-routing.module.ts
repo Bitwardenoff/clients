@@ -21,9 +21,11 @@ import {
   LockV2Component,
   PasswordHintComponent,
   RegistrationFinishComponent,
+  RegistrationLockAltIcon,
   RegistrationStartComponent,
   RegistrationStartSecondaryComponent,
   RegistrationStartSecondaryComponentData,
+  RegistrationUserAddIcon,
   SetPasswordJitComponent,
   UserLockIcon,
 } from "@bitwarden/auth/angular";
@@ -472,6 +474,7 @@ const routes: Routes = [
         canActivate: [canAccessFeature(FeatureFlag.EmailVerification), unauthGuardFn()],
         data: {
           state: "signup",
+          pageIcon: RegistrationUserAddIcon,
           pageTitle: "createAccount",
         } satisfies RouteDataProperties & AnonLayoutWrapperData,
         children: [
@@ -493,6 +496,7 @@ const routes: Routes = [
         path: "finish-signup",
         canActivate: [canAccessFeature(FeatureFlag.EmailVerification), unauthGuardFn()],
         data: {
+          pageIcon: RegistrationLockAltIcon,
           pageTitle: "setAStrongPassword",
           pageSubtitle: "finishCreatingYourAccountBySettingAPassword",
           state: "finish-signup",
