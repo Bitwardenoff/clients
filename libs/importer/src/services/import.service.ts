@@ -52,6 +52,7 @@ import {
   MSecureCsvImporter,
   MeldiumCsvImporter,
   MykiCsvImporter,
+  NetwrixPasswordSecureCsvImporter,
   NordPassCsvImporter,
   OnePassword1PifImporter,
   OnePassword1PuxImporter,
@@ -333,6 +334,8 @@ export class ImportService implements ImportServiceAbstraction {
         return new PasskyJsonImporter();
       case "protonpass":
         return new ProtonPassJsonImporter(this.i18nService);
+      case "netwrixpasswordsecure":
+        return new NetwrixPasswordSecureCsvImporter();
       default:
         return null;
     }
