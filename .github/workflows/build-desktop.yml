@@ -1089,10 +1089,10 @@ jobs:
         run: |
           mkdir -p $HOME/secrets
 
-          az storage blob download --account-name $ACCOUNT_NAME --container-name $CONTAINER_NAME \
-            --name bitwarden_desktop_appstore.provisionprofile \
-            --file $HOME/secrets/bitwarden_desktop_appstore.provisionprofile \
-            --output none
+          # az storage blob download --account-name $ACCOUNT_NAME --container-name $CONTAINER_NAME \
+          #   --name bitwarden_desktop_appstore.provisionprofile \
+          #   --file $HOME/secrets/bitwarden_desktop_appstore.provisionprofile \
+          #   --output none
 
           az storage blob download --account-name $ACCOUNT_NAME --container-name $CONTAINER_NAME \
             --name bitwarden_desktop_autofill_app_store_2024.provisionprofile \
@@ -1218,6 +1218,11 @@ jobs:
           APP_STORE_CONNECT_TEAM_ISSUER: ${{ secrets.APP_STORE_CONNECT_TEAM_ISSUER }}
           APP_STORE_CONNECT_AUTH_KEY_PATH: ~/private_keys/AuthKey_6TV9MKN3GP.p8
         run: npm run pack:mac:masdev
+
+      - name: Resign
+        run: |
+          security find-identity -v -p codesigning
+          codesign --entitlements apps/desktop/resources/entitlements.mas.plist --force --sign "Developer ID Application: 8bit Solutions LLC (LTZ2PFU5D6)" dist/mas-dev-universal/Bitwarden.app
 
       - name: Zip masdev asset
         run: |
