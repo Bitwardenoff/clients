@@ -32,7 +32,7 @@
 		<key>NSHumanReadableCopyright</key>
 		<string>Copyright © 2015-2024 Bitwarden Inc. All rights reserved.</string>
 		<key>NSHumanReadableDescription</key>
-		<string>A secure and free password manager for all of your devices.</string>
+		<string>Securely create, save, and autofill logins and sensitive information.</string>
 		<key>SFSafariAppExtensionBundleIdentifiersToReplace</key>
 		<array>
 			<string>com.bitwarden.desktop.safari</string>
