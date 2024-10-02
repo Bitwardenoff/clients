@@ -42,16 +42,17 @@ import { EventCollectionService } from "@bitwarden/common/abstractions/event/eve
 import { SearchService } from "@bitwarden/common/abstractions/search.service";
 import { OrganizationService } from "@bitwarden/common/admin-console/abstractions/organization/organization.service.abstraction";
 import { Organization } from "@bitwarden/common/admin-console/models/domain/organization";
-import { AccountService } from "@bitwarden/common/auth/abstractions/account.service";
 import { EventType } from "@bitwarden/common/enums";
+import { FeatureFlag } from "@bitwarden/common/enums/feature-flag.enum";
 import { BroadcasterService } from "@bitwarden/common/platform/abstractions/broadcaster.service";
+import { ConfigService } from "@bitwarden/common/platform/abstractions/config/config.service";
 import { I18nService } from "@bitwarden/common/platform/abstractions/i18n.service";
 import { LogService } from "@bitwarden/common/platform/abstractions/log.service";
 import { MessagingService } from "@bitwarden/common/platform/abstractions/messaging.service";
 import { PlatformUtilsService } from "@bitwarden/common/platform/abstractions/platform-utils.service";
 import { Utils } from "@bitwarden/common/platform/misc/utils";
 import { SyncService } from "@bitwarden/common/platform/sync";
-import { OrganizationId } from "@bitwarden/common/types/guid";
+import { CipherId, CollectionId, OrganizationId } from "@bitwarden/common/types/guid";
 import { CipherService } from "@bitwarden/common/vault/abstractions/cipher.service";
 import { CollectionService } from "@bitwarden/common/vault/abstractions/collection.service";
 import { TotpService } from "@bitwarden/common/vault/abstractions/totp.service";
@@ -62,7 +63,11 @@ import { CipherView } from "@bitwarden/common/vault/models/view/cipher.view";
 import { CollectionView } from "@bitwarden/common/vault/models/view/collection.view";
 import { ServiceUtils } from "@bitwarden/common/vault/service-utils";
 import { DialogService, Icons, NoItemsModule, ToastService } from "@bitwarden/components";
-import { CollectionAssignmentResult, PasswordRepromptService } from "@bitwarden/vault";
+import {
+  CipherFormConfigService,
+  CollectionAssignmentResult,
+  PasswordRepromptService,
+} from "@bitwarden/vault";
 
 import { GroupService, GroupView } from "../../admin-console/organizations/core";
 import { openEntityEventsDialog } from "../../admin-console/organizations/manage/entity-events.component";
@@ -78,6 +83,12 @@ import {
 import { VaultItemEvent } from "../components/vault-items/vault-item-event";
 import { VaultItemsModule } from "../components/vault-items/vault-items.module";
 import {
+  AddEditCipherDialogCloseResult,
+  AddEditCipherDialogResult,
+  AddEditComponentV2,
+  openAddEditCipherDialog,
+} from "../individual-vault/add-edit-v2.component";
+import {
   BulkDeleteDialogResult,
   openBulkDeleteDialog,
 } from "../individual-vault/bulk-action-dialogs/bulk-delete-dialog/bulk-delete-dialog.component";
@@ -89,12 +100,6 @@ import {
   All,
   RoutedVaultFilterModel,
 } from "../individual-vault/vault-filter/shared/models/routed-vault-filter.model";
-import {
-  openViewCipherDialog,
-  ViewCipherDialogCloseResult,
-  ViewCipherDialogResult,
-  ViewComponent,
-} from "../individual-vault/view.component";
 import { VaultHeaderComponent } from "../org-vault/vault-header/vault-header.component";
 import { getNestedCollectionTree } from "../utils/collection-utils";
 
@@ -106,8 +111,8 @@ import {
 } from "./bulk-collections-dialog";
 import { CollectionAccessRestrictedComponent } from "./collection-access-restricted.component";
 import { openOrgVaultCollectionsDialog } from "./collections.component";
+import { AdminConsoleCipherFormConfigService } from "./services/admin-console-cipher-form-config.service";
 import { VaultFilterModule } from "./vault-filter/vault-filter.module";
-
 const BroadcasterSubscriptionId = "OrgVaultComponent";
 const SearchTextDebounceInterval = 200;
 
@@ -127,9 +132,13 @@ enum AddAccessStatusType {
     VaultItemsModule,
     SharedModule,
     NoItemsModule,
-    ViewComponent,
+    AddEditComponentV2,
   ],
-  providers: [RoutedVaultFilterService, RoutedVaultFilterBridgeService],
+  providers: [
+    RoutedVaultFilterService,
+    RoutedVaultFilterBridgeService,
+    { provide: CipherFormConfigService, useClass: AdminConsoleCipherFormConfigService },
+  ],
 })
 export class VaultComponent implements OnInit, OnDestroy {
   protected Unassigned = Unassigned;
@@ -174,6 +183,7 @@ export class VaultComponent implements OnInit, OnDestroy {
   private refresh$ = new BehaviorSubject<void>(null);
   private destroy$ = new Subject<void>();
   protected addAccessStatus$ = new BehaviorSubject<AddAccessStatusType>(0);
+  private extensionRefreshEnabled: boolean;
 
   constructor(
     private route: ActivatedRoute,
@@ -203,10 +213,15 @@ export class VaultComponent implements OnInit, OnDestroy {
     private apiService: ApiService,
     private collectionService: CollectionService,
     private toastService: ToastService,
-    private accountService: AccountService,
+    private configService: ConfigService,
+    private cipherFormConfigService: CipherFormConfigService,
   ) {}
 
   async ngOnInit() {
+    this.extensionRefreshEnabled = await this.configService.getFeatureFlag(
+      FeatureFlag.ExtensionRefresh,
+    );
+
     this.trashCleanupWarning = this.i18nService.t(
       this.platformUtilsService.isSelfHost()
         ? "trashCleanupWarningSelfHosted"
@@ -467,21 +482,19 @@ export class VaultComponent implements OnInit, OnDestroy {
       .pipe(
         switchMap(() => this.route.queryParams),
         withLatestFrom(allCipherMap$, allCollections$, organization$),
-        switchMap(async ([qParams, allCiphersMap, allCollections]) => {
+        switchMap(async ([qParams, allCiphersMap]) => {
           const cipherId = getCipherIdFromParams(qParams);
           if (!cipherId) {
             return;
           }
           const cipher = allCiphersMap[cipherId];
-          const cipherCollections = allCollections.filter((c) =>
-            cipher.collectionIds.includes(c.id),
-          );
 
           if (cipher) {
             if (qParams.action === "view") {
-              await this.viewCipher(cipher, cipherCollections);
-            } else {
-              await this.editCipherId(cipherId);
+              // Only allow for edit in the admin console via query params,
+              // This prevents multiple modals from stacking on top of each other between view & edit.
+              // TODO: PM-12398 - combine view/edit actions into a single dialog
+              await this.editCipherId(cipherId, false);
             }
           } else {
             this.toastService.showToast({
@@ -733,12 +746,16 @@ export class VaultComponent implements OnInit, OnDestroy {
   }
 
   async addCipher(cipherType?: CipherType) {
+    if (this.extensionRefreshEnabled) {
+      return this.addCipherV2(cipherType);
+    }
+
     let collections: CollectionView[] = [];
 
     // Admins limited to only adding items to collections they have access to.
     collections = await firstValueFrom(this.editableCollections$);
 
-    await this.editCipher(null, (comp) => {
+    await this.editCipher(null, false, (comp) => {
       comp.type = cipherType || this.activeFilter.cipherType;
       comp.collections = collections;
       if (this.activeFilter.collectionId) {
@@ -747,15 +764,54 @@ export class VaultComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Opens the Add/Edit Dialog. Only to be used when the BrowserExtension feature flag is active */
+  async addCipherV2(cipherType?: CipherType) {
+    const cipherFormConfig = await this.cipherFormConfigService.buildConfig(
+      "add",
+      null,
+      cipherType,
+    );
+
+    cipherFormConfig.initialValues = {
+      organizationId: this.organization.id as OrganizationId,
+      collectionIds: this.collections.map((c) => c.id as CollectionId),
+    };
+
+    // Open the dialog.
+    const dialogRef = openAddEditCipherDialog(this.dialogService, {
+      data: cipherFormConfig,
+    });
+
+    // Wait for the dialog to close.
+    const result: AddEditCipherDialogCloseResult = await lastValueFrom(dialogRef.closed);
+
+    // Refresh the vault to show the new cipher.
+    if (result?.action === AddEditCipherDialogResult.Added) {
+      this.refresh();
+      this.go({ itemId: result.id, action: "view" });
+      return;
+    }
+
+    // If the dialog was closed by any other action navigate back to the vault.
+    this.go({ cipherId: null, itemId: null, action: null });
+  }
+
   async editCipher(
     cipher: CipherView,
+    /**
+     * True when the cipher should be cloned
+     * Used in place of the `additionalComponentParameters` above, as
+     * the `editCipherIdV2` method has a differing implementation.
+     */
+    cloneCipher: boolean,
     additionalComponentParameters?: (comp: AddEditComponent) => void,
   ) {
-    return this.editCipherId(cipher?.id, additionalComponentParameters);
+    return this.editCipherId(cipher?.id, cloneCipher, additionalComponentParameters);
   }
 
   async editCipherId(
     cipherId: string,
+    cloneCipher: boolean,
     additionalComponentParameters?: (comp: AddEditComponent) => void,
   ) {
     const cipher = await this.cipherService.get(cipherId);
@@ -768,6 +824,11 @@ export class VaultComponent implements OnInit, OnDestroy {
     ) {
       // didn't pass password prompt, so don't open add / edit modal
       this.go({ cipherId: null, itemId: null });
+      return;
+    }
+
+    if (this.extensionRefreshEnabled) {
+      await this.editCipherIdV2(cipherId as CipherId, cloneCipher);
       return;
     }
 
@@ -810,45 +871,26 @@ export class VaultComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Takes a cipher and its assigned collections to opens dialog where it can be viewed.
-   * @param cipher - the cipher to view
-   * @param collections - the collections the cipher is assigned to
+   * Edit a cipher using the new AddEditCipherDialogV2 component.
+   * Only to be used behind the ExtensionRefresh feature flag.
    */
-  async viewCipher(cipher: CipherView, collections: CollectionView[] = []) {
-    if (!cipher) {
-      this.go({ cipherId: null, itemId: null });
-      return;
-    }
+  private async editCipherIdV2(cipherId: CipherId, cloneCipher: boolean) {
+    const cipherFormConfig = await this.cipherFormConfigService.buildConfig(
+      cloneCipher ? "clone" : "edit",
+      cipherId,
+    );
 
-    if (cipher.reprompt !== 0 && !(await this.passwordRepromptService.showPasswordPrompt())) {
-      // didn't pass password prompt, so don't open the dialog
-      this.go({ cipherId: null, itemId: null });
-      return;
-    }
-
-    const dialogRef = openViewCipherDialog(this.dialogService, {
-      data: {
-        cipher: cipher,
-        collections: collections,
-        disableEdit: !cipher.edit && !this.organization.canEditAllCiphers,
-      },
+    const dialogRef = openAddEditCipherDialog(this.dialogService, {
+      data: cipherFormConfig,
     });
 
-    // Wait for the dialog to close.
-    const result: ViewCipherDialogCloseResult = await lastValueFrom(dialogRef.closed);
+    const result: AddEditCipherDialogCloseResult = await firstValueFrom(dialogRef.closed);
 
-    // If the dialog was closed by clicking the edit button, navigate to open the edit dialog.
-    if (result?.action === ViewCipherDialogResult.Edited) {
-      this.go({ itemId: cipher.id, action: "edit" });
-      return;
-    }
-
-    // If the dialog was closed by deleting the cipher, refresh the vault.
-    if (result?.action === ViewCipherDialogResult.Deleted) {
+    // When the cipher was edited, refresh the vault view
+    if (result?.action === AddEditCipherDialogResult.Edited) {
       this.refresh();
     }
 
-    // Clear the query params when the view dialog closes
     this.go({ cipherId: null, itemId: null, action: null });
   }
 
@@ -870,7 +912,7 @@ export class VaultComponent implements OnInit, OnDestroy {
     // Admins limited to only adding items to collections they have access to.
     collections = await firstValueFrom(this.editableCollections$);
 
-    await this.editCipher(cipher, (comp) => {
+    await this.editCipher(cipher, true, (comp) => {
       comp.cloneMode = true;
       comp.collections = collections;
       comp.collectionIds = cipher.collectionIds;

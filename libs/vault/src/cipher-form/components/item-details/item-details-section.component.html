@@ -18,7 +18,11 @@
       <input bitInput formControlName="name" />
     </bit-form-field>
     <div class="tw-grid tw-grid-cols-2 tw-gap-1">
-      <bit-form-field *ngIf="showOwnership" [disableMargin]="!showCollectionsControl">
+      <bit-form-field
+        *ngIf="showOwnership"
+        [disableMargin]="!showCollectionsControl"
+        [class.tw-col-span-2]="config.hideFolderSelection"
+      >
         <bit-label>{{ "owner" | i18n }}</bit-label>
         <bit-select formControlName="organizationId">
           <bit-option
@@ -36,6 +40,7 @@
       <bit-form-field
         [class.tw-col-span-2]="!showOwnership"
         [disableMargin]="!showCollectionsControl"
+        *ngIf="!config.hideFolderSelection"
       >
         <bit-label>{{ "folder" | i18n }}</bit-label>
         <bit-select formControlName="folderId">
