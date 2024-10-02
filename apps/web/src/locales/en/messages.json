@@ -3100,6 +3100,9 @@
   "all": {
     "message": "All"
   },
+  "toggleRow": {
+    "message": "Toggle row"
+  },
   "addAccess": {
     "message": "Add Access"
   },
