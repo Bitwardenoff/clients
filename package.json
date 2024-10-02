@@ -159,7 +159,7 @@
     "@angular/router": "16.2.12",
     "@electron/fuses": "1.8.0",
     "@koa/multer": "3.0.2",
-    "@koa/router": "12.0.1",
+    "@koa/router": "12.0.2",
     "@microsoft/signalr": "8.0.7",
     "@microsoft/signalr-protocol-msgpack": "8.0.7",
     "@ng-select/ng-select": "11.2.0",
