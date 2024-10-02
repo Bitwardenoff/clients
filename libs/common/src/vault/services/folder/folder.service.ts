@@ -81,7 +81,7 @@ export class FolderService implements InternalFolderServiceAbstraction {
    */
   async getFromState(id: string): Promise<Folder> {
     const folder = await this.get(id);
-    if (!folder) {
+    if (folder == null) {
       return null;
     }
 

@@ -277,6 +277,7 @@ export class VaultComponent implements OnInit, OnDestroy {
 
     this.cipherId = cipher.id;
     this.action = "view";
+
     this.go();
   }
 

@@ -1036,7 +1036,8 @@ jobs:
         if: |
             (github.ref == 'refs/heads/main'
             || github.ref == 'refs/heads/rc'
-            || github.ref == 'refs/heads/hotfix-rc-desktop')
+            || github.ref == 'refs/heads/hotfix-rc-desktop'
+            || contains(github.event.pull_request.labels.*.name, 'testflight'))
         env:
           APP_STORE_CONNECT_TEAM_ISSUER: ${{ secrets.APP_STORE_CONNECT_TEAM_ISSUER }}
           APP_STORE_CONNECT_AUTH_KEY: 6TV9MKN3GP
