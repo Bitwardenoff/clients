@@ -791,7 +791,7 @@ export class ServiceContainer {
     const userId = (await this.stateService.getUserId()) as UserId;
     await Promise.all([
       this.eventUploadService.uploadEvents(userId as UserId),
-      this.cryptoService.clearKeys(),
+      this.cryptoService.clearKeys(userId),
       this.cipherService.clear(userId),
       this.folderService.clear(userId),
       this.collectionService.clear(userId as UserId),
@@ -799,7 +799,7 @@ export class ServiceContainer {
 
     await this.stateEventRunnerService.handleEvent("logout", userId);
 
-    await this.stateService.clean();
+    await this.stateService.clean({ userId });
     await this.accountService.clean(userId);
     await this.accountService.switchAccount(null);
     process.env.BW_SESSION = undefined;

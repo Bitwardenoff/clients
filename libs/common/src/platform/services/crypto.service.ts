@@ -232,20 +232,12 @@ export class CryptoService implements CryptoServiceAbstraction {
 
   async clearStoredUserKey(keySuffix: KeySuffixOptions, userId?: UserId): Promise<void> {
     if (keySuffix === KeySuffixOptions.Auto) {
-      // FIXME: Verify that this floating promise is intentional. If it is, add an explanatory comment and ensure there is proper error handling.
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.stateService.setUserKeyAutoUnlock(null, { userId: userId });
-      // FIXME: Verify that this floating promise is intentional. If it is, add an explanatory comment and ensure there is proper error handling.
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.clearDeprecatedKeys(KeySuffixOptions.Auto, userId);
+      await this.stateService.setUserKeyAutoUnlock(null, { userId });
+      await this.clearDeprecatedKeys(KeySuffixOptions.Auto, userId);
     }
     if (keySuffix === KeySuffixOptions.Pin) {
-      // FIXME: Verify that this floating promise is intentional. If it is, add an explanatory comment and ensure there is proper error handling.
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.pinService.clearPinKeyEncryptedUserKeyEphemeral(userId);
-      // FIXME: Verify that this floating promise is intentional. If it is, add an explanatory comment and ensure there is proper error handling.
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      this.clearDeprecatedKeys(KeySuffixOptions.Pin, userId);
+      await this.pinService.clearPinKeyEncryptedUserKeyEphemeral(userId);
+      await this.clearDeprecatedKeys(KeySuffixOptions.Pin, userId);
     }
   }
 
