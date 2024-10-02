@@ -2177,7 +2177,7 @@ exports[`AutofillInlineMenuList initAutofillInlineMenuList the locked inline men
     class="locked-inline-menu inline-menu-list-message"
     id="locked-inline-menu-description"
   >
-    unlockYourAccount
+    unlockYourAccountToViewAutofillSuggestions
   </div>
   <div
     class="inline-menu-list-button-container"
